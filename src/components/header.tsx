@@ -14,6 +14,8 @@ import {
 } from "@/components/ui/dropdown-menu"
 import Link from "next/link"
 
+import { ModeToggle } from "./theme-toggle";
+
 export function Header() {
   const [searchQuery, setSearchQuery] = useState("")
   const [cartItems, setCartItems] = useState(0)
@@ -117,6 +119,7 @@ export function Header() {
                 )}
               </Link>
             </Button>
+            <ModeToggle />
             <Button variant="ghost" size="sm" className="md:hidden">
               <Menu className="w-4 h-4" />
             </Button>
