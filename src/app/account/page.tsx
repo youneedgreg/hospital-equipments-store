@@ -11,7 +11,6 @@ import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { Separator } from "@/components/ui/separator"
 
-
 // Mock user data
 const userData = {
   name: "Dr. Sarah Johnson",
@@ -110,8 +109,6 @@ export default function AccountPage() {
 
   return (
     <div className="min-h-screen bg-background">
-
-
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-6xl mx-auto">
           <div className="mb-8">
@@ -258,7 +255,7 @@ export default function AccountPage() {
                         </div>
                         <div className="flex items-center gap-4">
                           <div className="text-right">
-<p className="font-medium text-foreground">KES {order.total}</p>
+                            <p className="font-medium text-foreground">KES {order.total}</p>
                             <Badge className={getStatusColor(order.status)} variant="secondary">
                               {order.status}
                             </Badge>
@@ -472,10 +469,6 @@ export default function AccountPage() {
           </Tabs>
         </div>
       </div>
-    </div>
-  )
-}
-</div>
     </div>
   )
 }
