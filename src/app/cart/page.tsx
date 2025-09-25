@@ -15,8 +15,8 @@ const initialCartItems = [
   {
     id: 1,
     name: "Digital Blood Pressure Monitor",
-    price: 299.99,
-    originalPrice: 349.99,
+    price: 38998.7,
+    originalPrice: 45498.7,
     image: "/images/products/bp-monitor.png",
     category: "Monitoring Equipment",
     brand: "MedTech Pro",
@@ -26,8 +26,8 @@ const initialCartItems = [
   {
     id: 2,
     name: "Surgical Stethoscope Premium",
-    price: 189.99,
-    originalPrice: 229.99,
+    price: 24698.7,
+    originalPrice: 29898.7,
     image: "/premium-surgical-stethoscope-medical-instrument.jpg",
     category: "Diagnostic Tools",
     brand: "CardioScope",
@@ -37,8 +37,8 @@ const initialCartItems = [
   {
     id: 4,
     name: "Pulse Oximeter Professional",
-    price: 79.99,
-    originalPrice: 99.99,
+    price: 10398.7,
+    originalPrice: 12998.7,
     image: "/professional-pulse-oximeter-medical-monitoring-dev.jpg",
     category: "Monitoring Equipment",
     brand: "OxyMed",
@@ -73,7 +73,7 @@ export default function CartPage() {
   const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
   const savings = cartItems.reduce((sum, item) => sum + (item.originalPrice - item.price) * item.quantity, 0)
   const promoDiscount = appliedPromo ? subtotal * 0.1 : 0
-  const shipping = subtotal > 500 ? 0 : 29.99
+  const shipping = subtotal > 65000 ? 0 : 3898.7
   const tax = (subtotal - promoDiscount) * 0.08
   const total = subtotal - promoDiscount + shipping + tax
 
@@ -147,9 +147,9 @@ export default function CartPage() {
 
                         <div className="flex items-center justify-between">
                           <div className="flex items-center space-x-2">
-                            <span className="text-xl font-bold text-foreground">${item.price}</span>
+                            <span className="text-xl font-bold text-foreground">KES {item.price}</span>
                             {item.originalPrice > item.price && (
-                              <span className="text-sm text-muted-foreground line-through">${item.originalPrice}</span>
+                              <span className="text-sm text-muted-foreground line-through">KES {item.originalPrice}</span>
                             )}
                           </div>
 
@@ -177,7 +177,7 @@ export default function CartPage() {
                             </div>
                             <div className="text-right min-w-[4rem]">
                               <p className="font-semibold text-foreground">
-                                ${(item.price * item.quantity).toFixed(2)}
+                                KES {(item.price * item.quantity).toFixed(2)}
                               </p>
                             </div>
                           </div>
@@ -198,43 +198,43 @@ export default function CartPage() {
                 <CardContent className="space-y-4">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Subtotal</span>
-                    <span className="font-medium">${subtotal.toFixed(2)}</span>
+                    <span className="font-medium">KES {subtotal.toFixed(2)}</span>
                   </div>
 
                   {savings > 0 && (
                     <div className="flex justify-between text-green-600">
                       <span>You Save</span>
-                      <span className="font-medium">-${savings.toFixed(2)}</span>
+                      <span className="font-medium">-KES {savings.toFixed(2)}</span>
                     </div>
                   )}
 
                   {appliedPromo && (
                     <div className="flex justify-between text-green-600">
                       <span>Promo ({appliedPromo})</span>
-                      <span className="font-medium">-${promoDiscount.toFixed(2)}</span>
+                      <span className="font-medium">-KES {promoDiscount.toFixed(2)}</span>
                     </div>
                   )}
 
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Shipping</span>
-                    <span className="font-medium">{shipping === 0 ? "FREE" : `$${shipping.toFixed(2)}`}</span>
+                    <span className="font-medium">{shipping === 0 ? "FREE" : `KES {shipping.toFixed(2)}`}</span>
                   </div>
 
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Tax</span>
-                    <span className="font-medium">${tax.toFixed(2)}</span>
+                    <span className="font-medium">KES {tax.toFixed(2)}</span>
                   </div>
 
                   <Separator />
 
                   <div className="flex justify-between text-lg font-bold">
                     <span>Total</span>
-                    <span>${total.toFixed(2)}</span>
+                    <span>KES {total.toFixed(2)}</span>
                   </div>
 
                   {shipping > 0 && (
                     <p className="text-sm text-muted-foreground">
-                      Add ${(500 - subtotal).toFixed(2)} more for free shipping
+                      Add KES {(500 - subtotal).toFixed(2)} more for free shipping
                     </p>
                   )}
                 </CardContent>

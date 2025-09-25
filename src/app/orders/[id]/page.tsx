@@ -55,24 +55,24 @@ const orderData = {
       id: 1,
       name: "Digital Blood Pressure Monitor",
       image: "/images/products/bp-monitor.png",
-      price: 299.99,
+      price: 38998.7,
       quantity: 2,
-      total: 599.98,
+      total: 77997.4,
     },
     {
       id: 2,
       name: "Pulse Oximeter Professional",
       image: "/professional-pulse-oximeter-medical-monitoring-dev.jpg",
-      price: 79.99,
+      price: 10398.7,
       quantity: 1,
-      total: 79.99,
+      total: 10398.7,
     },
   ],
   summary: {
-    subtotal: 679.97,
-    shipping: 49.99,
-    tax: 58.4,
-    total: 788.36,
+    subtotal: 88396.1,
+    shipping: 6498.7,
+    tax: 7592,
+    total: 102486.8,
   },
   timeline: [
     {
@@ -274,11 +274,11 @@ export default function OrderTrackingPage({ params }: { params: { id: string } }
                     <div className="flex-1">
                       <h4 className="font-medium text-foreground">{item.name}</h4>
                       <p className="text-sm text-muted-foreground">
-                        ${item.price} × {item.quantity}
+                        KES {item.price} × {item.quantity}
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="font-medium text-foreground">${item.total}</p>
+                      <p className="font-medium text-foreground">KES {item.total}</p>
                     </div>
                   </div>
                 ))}
@@ -288,20 +288,20 @@ export default function OrderTrackingPage({ params }: { params: { id: string } }
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Subtotal</span>
-                    <span>${orderData.summary.subtotal}</span>
+                    <span>KES {orderData.summary.subtotal}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Shipping ({orderData.shippingMethod})</span>
-                    <span>${orderData.summary.shipping}</span>
+                    <span>KES {orderData.summary.shipping}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Tax</span>
-                    <span>${orderData.summary.tax}</span>
+                    <span>KES {orderData.summary.tax}</span>
                   </div>
                   <Separator />
                   <div className="flex justify-between font-medium">
                     <span>Total</span>
-                    <span>${orderData.summary.total}</span>
+                    <span>KES {orderData.summary.total}</span>
                   </div>
                 </div>
               </CardContent>

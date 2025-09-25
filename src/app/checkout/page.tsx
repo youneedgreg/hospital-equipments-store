@@ -18,21 +18,21 @@ const cartItems = [
   {
     id: 1,
     name: "Digital Blood Pressure Monitor",
-    price: 299.99,
+    price: 38998.7,
     quantity: 2,
     image: "/images/products/bp-monitor.png",
   },
   {
     id: 2,
     name: "Surgical Stethoscope Premium",
-    price: 189.99,
+    price: 24698.7,
     quantity: 1,
     image: "/premium-surgical-stethoscope-medical-instrument.jpg",
   },
   {
     id: 4,
     name: "Pulse Oximeter Professional",
-    price: 79.99,
+    price: 10398.7,
     quantity: 3,
     image: "/professional-pulse-oximeter-medical-monitoring-dev.jpg",
   },
@@ -64,7 +64,7 @@ export default function CheckoutPage() {
   const [isProcessing, setIsProcessing] = useState(false)
 
   const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
-  const shippingCost = shippingMethod === "express" ? 49.99 : shippingMethod === "overnight" ? 99.99 : 29.99
+  const shippingCost = shippingMethod === "express" ? 6498.7 : shippingMethod === "overnight" ? 12998.7 : 3898.7
   const tax = subtotal * 0.08
   const total = subtotal + shippingCost + tax
 
@@ -255,7 +255,7 @@ export default function CheckoutPage() {
                           <Label htmlFor="standard" className="flex-1 cursor-pointer">
                             <div className="flex justify-between">
                               <span>Standard Shipping (5-7 business days)</span>
-                              <span className="font-medium">$29.99</span>
+                              <span className="font-medium">KES 3898.7</span>
                             </div>
                           </Label>
                         </div>
@@ -264,7 +264,7 @@ export default function CheckoutPage() {
                           <Label htmlFor="express" className="flex-1 cursor-pointer">
                             <div className="flex justify-between">
                               <span>Express Shipping (2-3 business days)</span>
-                              <span className="font-medium">$49.99</span>
+                              <span className="font-medium">KES 6498.7</span>
                             </div>
                           </Label>
                         </div>
@@ -273,7 +273,7 @@ export default function CheckoutPage() {
                           <Label htmlFor="overnight" className="flex-1 cursor-pointer">
                             <div className="flex justify-between">
                               <span>Overnight Shipping (1 business day)</span>
-                              <span className="font-medium">$99.99</span>
+                              <span className="font-medium">KES 12998.7</span>
                             </div>
                           </Label>
                         </div>
@@ -406,7 +406,7 @@ export default function CheckoutPage() {
                             <p className="text-sm text-muted-foreground">Quantity: {item.quantity}</p>
                           </div>
                           <div className="text-right">
-                            <p className="font-medium">${(item.price * item.quantity).toFixed(2)}</p>
+                            <p className="font-medium">KES {(item.price * item.quantity).toFixed(2)}</p>
                           </div>
                         </div>
                       ))}
@@ -417,20 +417,20 @@ export default function CheckoutPage() {
                     <div className="space-y-2">
                       <div className="flex justify-between">
                         <span>Subtotal</span>
-                        <span>${subtotal.toFixed(2)}</span>
+                        <span>KES {subtotal.toFixed(2)}</span>
                       </div>
                       <div className="flex justify-between">
                         <span>Shipping</span>
-                        <span>${shippingCost.toFixed(2)}</span>
+                        <span>KES {shippingCost.toFixed(2)}</span>
                       </div>
                       <div className="flex justify-between">
                         <span>Tax</span>
-                        <span>${tax.toFixed(2)}</span>
+                        <span>KES {tax.toFixed(2)}</span>
                       </div>
                       <Separator />
                       <div className="flex justify-between text-lg font-bold">
                         <span>Total</span>
-                        <span>${total.toFixed(2)}</span>
+                        <span>KES {total.toFixed(2)}</span>
                       </div>
                     </div>
 
@@ -461,7 +461,7 @@ export default function CheckoutPage() {
                         <span className="text-muted-foreground">
                           {item.name} × {item.quantity}
                         </span>
-                        <span className="font-medium">${(item.price * item.quantity).toFixed(2)}</span>
+                        <span className="font-medium">KES {(item.price * item.quantity).toFixed(2)}</span>
                       </div>
                     ))}
                   </div>
@@ -471,15 +471,15 @@ export default function CheckoutPage() {
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Subtotal</span>
-                      <span>${subtotal.toFixed(2)}</span>
+                      <span>KES {subtotal.toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Shipping</span>
-                      <span>${shippingCost.toFixed(2)}</span>
+                      <span>KES {shippingCost.toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Tax</span>
-                      <span>${tax.toFixed(2)}</span>
+                      <span>KES {tax.toFixed(2)}</span>
                     </div>
                   </div>
 
@@ -487,7 +487,7 @@ export default function CheckoutPage() {
 
                   <div className="flex justify-between font-bold">
                     <span>Total</span>
-                    <span>${total.toFixed(2)}</span>
+                    <span>KES {total.toFixed(2)}</span>
                   </div>
                 </CardContent>
               </Card>

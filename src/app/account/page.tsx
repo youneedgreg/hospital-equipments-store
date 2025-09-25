@@ -21,7 +21,7 @@ const userData = {
   title: "Chief Medical Officer",
   joinDate: "January 2023",
   totalOrders: 12,
-  totalSpent: 5430.5,
+  totalSpent: 705965,
 }
 
 const recentOrders = [
@@ -29,21 +29,21 @@ const recentOrders = [
     id: "ORD-2024-001",
     date: "2024-01-15",
     status: "In Transit",
-    total: 788.36,
+    total: 102486.8,
     items: 3,
   },
   {
     id: "ORD-2024-002",
     date: "2024-01-10",
     status: "Delivered",
-    total: 459.98,
+    total: 59797.4,
     items: 2,
   },
   {
     id: "ORD-2024-003",
     date: "2024-01-05",
     status: "Processing",
-    total: 2899.99,
+    total: 376998.7,
     items: 1,
   },
 ]
@@ -221,7 +221,7 @@ export default function AccountPage() {
                       <p className="text-sm text-muted-foreground">Total Orders</p>
                     </div>
                     <div className="text-center">
-                      <p className="text-2xl font-bold text-foreground">${userData.totalSpent.toLocaleString()}</p>
+                      <p className="text-2xl font-bold text-foreground">KES {userData.totalSpent.toLocaleString()}</p>
                       <p className="text-sm text-muted-foreground">Total Spent</p>
                     </div>
                     <div className="text-center">
@@ -258,7 +258,7 @@ export default function AccountPage() {
                         </div>
                         <div className="flex items-center gap-4">
                           <div className="text-right">
-                            <p className="font-medium text-foreground">${order.total}</p>
+<p className="font-medium text-foreground">KES {order.total}</p>
                             <Badge className={getStatusColor(order.status)} variant="secondary">
                               {order.status}
                             </Badge>
@@ -378,7 +378,7 @@ export default function AccountPage() {
                           <p className="text-sm text-muted-foreground">{order.date}</p>
                         </div>
                         <div className="flex items-center gap-4">
-                          <p className="font-medium text-foreground">${order.total}</p>
+                          <p className="font-medium text-foreground">KES {order.total}</p>
                           <Button variant="outline" size="sm">
                             Download Invoice
                           </Button>
@@ -472,6 +472,10 @@ export default function AccountPage() {
           </Tabs>
         </div>
       </div>
+    </div>
+  )
+}
+</div>
     </div>
   )
 }

@@ -16,7 +16,7 @@ const orders = [
     id: "ORD-2024-001",
     date: "2024-01-15",
     status: "In Transit",
-    total: 788.36,
+    total: 102486.8,
     items: 3,
     estimatedDelivery: "2024-01-18",
     trackingNumber: "1Z999AA1234567890",
@@ -25,7 +25,7 @@ const orders = [
     id: "ORD-2024-002",
     date: "2024-01-10",
     status: "Delivered",
-    total: 459.98,
+    total: 59797.4,
     items: 2,
     estimatedDelivery: "2024-01-13",
     trackingNumber: "1Z999AA1234567891",
@@ -34,7 +34,7 @@ const orders = [
     id: "ORD-2024-003",
     date: "2024-01-05",
     status: "Processing",
-    total: 2899.99,
+    total: 376998.7,
     items: 1,
     estimatedDelivery: "2024-01-20",
     trackingNumber: "1Z999AA1234567892",
@@ -43,7 +43,7 @@ const orders = [
     id: "ORD-2023-045",
     date: "2023-12-28",
     status: "Delivered",
-    total: 189.99,
+    total: 24698.7,
     items: 1,
     estimatedDelivery: "2023-12-30",
     trackingNumber: "1Z999AA1234567893",
@@ -52,7 +52,7 @@ const orders = [
     id: "ORD-2023-044",
     date: "2023-12-20",
     status: "Delivered",
-    total: 679.97,
+    total: 88396.1,
     items: 4,
     estimatedDelivery: "2023-12-23",
     trackingNumber: "1Z999AA1234567894",
@@ -202,7 +202,7 @@ export default function OrdersPage() {
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
                           <div>
                             <p className="text-muted-foreground">Total Amount</p>
-                            <p className="font-medium text-foreground">${order.total}</p>
+                            <p className="font-medium text-foreground">KES {order.total}</p>
                           </div>
                           <div>
                             <p className="text-muted-foreground">Items</p>
@@ -263,7 +263,7 @@ export default function OrdersPage() {
                   </div>
                   <div className="text-center">
                     <p className="text-2xl font-bold text-foreground">
-                      ${filteredOrders.reduce((sum, order) => sum + order.total, 0).toFixed(2)}
+                      KES {filteredOrders.reduce((sum, order) => sum + order.total, 0).toFixed(2)}
                     </p>
                     <p className="text-sm text-muted-foreground">Total Spent</p>
                   </div>

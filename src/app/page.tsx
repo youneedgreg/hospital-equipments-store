@@ -14,8 +14,8 @@ const featuredProducts = [
   {
     id: 1,
     name: "Digital Blood Pressure Monitor",
-    price: 299.99,
-    originalPrice: 349.99,
+    price: 38998.7,
+    originalPrice: 45498.7,
     image: "/images/products/bp-monitor.png",
     category: "Monitoring Equipment",
     rating: 4.8,
@@ -26,8 +26,8 @@ const featuredProducts = [
   {
     id: 2,
     name: "Surgical Stethoscope Premium",
-    price: 189.99,
-    originalPrice: 229.99,
+    price: 24698.7,
+    originalPrice: 29898.7,
     image: "/premium-surgical-stethoscope-medical-instrument.jpg",
     category: "Diagnostic Tools",
     rating: 4.9,
@@ -38,8 +38,8 @@ const featuredProducts = [
   {
     id: 3,
     name: "Hospital Bed Electric Adjustable",
-    price: 2499.99,
-    originalPrice: 2899.99,
+    price: 324998.7,
+    originalPrice: 376998.7,
     image: "/electric-adjustable-hospital-bed-medical-furniture.jpg",
     category: "Furniture",
     rating: 4.7,
@@ -50,8 +50,8 @@ const featuredProducts = [
   {
     id: 4,
     name: "Pulse Oximeter Professional",
-    price: 79.99,
-    originalPrice: 99.99,
+    price: 10398.7,
+    originalPrice: 12998.7,
     image: "/professional-pulse-oximeter-medical-monitoring-dev.jpg",
     category: "Monitoring Equipment",
     rating: 4.6,
@@ -174,9 +174,9 @@ export default function HomePage() {
                     <span className="text-sm text-muted-foreground ml-2">({product.reviews})</span>
                   </div>
                   <div className="flex items-center space-x-2 mb-4">
-                    <span className="text-2xl font-bold text-foreground">${product.price}</span>
+                    <span className="text-2xl font-bold text-foreground">KES {product.price}</span>
                     {product.originalPrice > product.price && (
-                      <span className="text-sm text-muted-foreground line-through">${product.originalPrice}</span>
+                      <span className="text-sm text-muted-foreground line-through">KES {product.originalPrice}</span>
                     )}
                   </div>
                 </CardContent>

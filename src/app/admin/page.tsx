@@ -25,7 +25,7 @@ import { AdminHeader } from "@/components/admin-header"
 
 // Mock data for admin dashboard
 const dashboardStats = {
-  totalRevenue: 125430.5,
+  totalRevenue: 16305965,
   totalOrders: 1247,
   totalProducts: 156,
   totalUsers: 3421,
@@ -40,7 +40,7 @@ const recentOrders = [
     id: "ORD-2024-001",
     customer: "Dr. Sarah Johnson",
     email: "sarah.johnson@cityhospital.com",
-    total: 1299.99,
+    total: 168998.7,
     status: "Processing",
     date: "2024-01-15",
     items: 3,
@@ -49,7 +49,7 @@ const recentOrders = [
     id: "ORD-2024-002",
     customer: "Michael Chen",
     email: "m.chen@medcenter.com",
-    total: 459.98,
+    total: 59797.4,
     status: "Shipped",
     date: "2024-01-14",
     items: 2,
@@ -58,7 +58,7 @@ const recentOrders = [
     id: "ORD-2024-003",
     customer: "Dr. Emily Rodriguez",
     email: "e.rodriguez@healthclinic.com",
-    total: 2899.99,
+    total: 376998.7,
     status: "Delivered",
     date: "2024-01-13",
     items: 1,
@@ -67,7 +67,7 @@ const recentOrders = [
     id: "ORD-2024-004",
     customer: "James Wilson",
     email: "j.wilson@hospital.org",
-    total: 189.99,
+    total: 24698.7,
     status: "Processing",
     date: "2024-01-12",
     items: 1,
@@ -79,7 +79,7 @@ const products = [
     id: 1,
     name: "Digital Blood Pressure Monitor",
     category: "Monitoring Equipment",
-    price: 299.99,
+    price: 38998.7,
     stock: 45,
     status: "Active",
     sales: 124,
@@ -88,7 +88,7 @@ const products = [
     id: 2,
     name: "Surgical Stethoscope Premium",
     category: "Diagnostic Tools",
-    price: 189.99,
+    price: 24698.7,
     stock: 23,
     status: "Active",
     sales: 89,
@@ -97,7 +97,7 @@ const products = [
     id: 3,
     name: "Hospital Bed Electric Adjustable",
     category: "Hospital Furniture",
-    price: 2499.99,
+    price: 324998.7,
     stock: 8,
     status: "Active",
     sales: 45,
@@ -106,7 +106,7 @@ const products = [
     id: 4,
     name: "Pulse Oximeter Professional",
     category: "Monitoring Equipment",
-    price: 79.99,
+    price: 10398.7,
     stock: 67,
     status: "Active",
     sales: 203,
@@ -115,7 +115,7 @@ const products = [
     id: 5,
     name: "Surgical Scissors Set",
     category: "Surgical Instruments",
-    price: 149.99,
+    price: 19498.7,
     stock: 0,
     status: "Out of Stock",
     sales: 67,
@@ -130,7 +130,7 @@ const users = [
     organization: "City General Hospital",
     joinDate: "2023-01-15",
     orders: 12,
-    totalSpent: 5430.5,
+    totalSpent: 705965,
     status: "Active",
   },
   {
@@ -140,7 +140,7 @@ const users = [
     organization: "Medical Center Plus",
     joinDate: "2023-03-22",
     orders: 8,
-    totalSpent: 2150.75,
+    totalSpent: 279597.5,
     status: "Active",
   },
   {
@@ -150,7 +150,7 @@ const users = [
     organization: "Health Clinic Network",
     joinDate: "2023-06-10",
     orders: 15,
-    totalSpent: 8920.25,
+    totalSpent: 1159632.5,
     status: "Active",
   },
 ]
@@ -205,7 +205,7 @@ export default function AdminDashboard() {
                   <DollarSign className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">${dashboardStats.totalRevenue.toLocaleString()}</div>
+                  <div className="text-2xl font-bold">KES {dashboardStats.totalRevenue.toLocaleString()}</div>
                   <p className="text-xs text-muted-foreground">
                     <span className="text-green-600">+{dashboardStats.revenueGrowth}%</span> from last month
                   </p>
@@ -274,8 +274,7 @@ export default function AdminDashboard() {
                     {recentOrders.slice(0, 5).map((order) => (
                       <TableRow key={order.id}>
                         <TableCell className="font-medium">{order.id}</TableCell>
-                        <TableCell>{order.customer}</TableCell>
-                        <TableCell>${order.total}</TableCell>
+                        <TableCell>KES {order.total}</TableCell>
                         <TableCell>
                           <Badge className={getStatusColor(order.status)}>{order.status}</Badge>
                         </TableCell>
@@ -373,7 +372,7 @@ export default function AdminDashboard() {
                         <TableCell className="font-medium">{order.id}</TableCell>
                         <TableCell>{order.customer}</TableCell>
                         <TableCell>{order.email}</TableCell>
-                        <TableCell>${order.total}</TableCell>
+                        <TableCell>KES {order.total}</TableCell>
                         <TableCell>{order.items}</TableCell>
                         <TableCell>
                           <Badge className={getStatusColor(order.status)}>{order.status}</Badge>
@@ -426,7 +425,7 @@ export default function AdminDashboard() {
                       <TableRow key={product.id}>
                         <TableCell className="font-medium">{product.name}</TableCell>
                         <TableCell>{product.category}</TableCell>
-                        <TableCell>${product.price}</TableCell>
+                        <TableCell>KES {product.price}</TableCell>
                         <TableCell>
                           <span className={product.stock < 10 ? "text-red-600 font-medium" : ""}>{product.stock}</span>
                         </TableCell>
@@ -490,7 +489,7 @@ export default function AdminDashboard() {
                         <TableCell>{user.organization}</TableCell>
                         <TableCell>{user.joinDate}</TableCell>
                         <TableCell>{user.orders}</TableCell>
-                        <TableCell>${user.totalSpent.toLocaleString()}</TableCell>
+                        <TableCell>KES {user.totalSpent.toLocaleString()}</TableCell>
                         <TableCell>
                           <Badge className={getStatusColor(user.status)}>{user.status}</Badge>
                         </TableCell>
@@ -528,11 +527,11 @@ export default function AdminDashboard() {
                   <div className="space-y-4">
                     <div className="flex justify-between items-center">
                       <span className="text-sm text-muted-foreground">This Month</span>
-                      <span className="font-medium">$45,230</span>
+                      <span className="font-medium">KES 5,879,900</span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-sm text-muted-foreground">Last Month</span>
-                      <span className="font-medium">$38,420</span>
+                      <span className="font-medium">KES 4,994,600</span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-sm text-muted-foreground">Growth</span>

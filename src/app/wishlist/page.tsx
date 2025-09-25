@@ -14,8 +14,8 @@ const wishlistItems = [
   {
     id: 1,
     name: "Digital Blood Pressure Monitor",
-    price: 299.99,
-    originalPrice: 349.99,
+    price: 38998.7,
+    originalPrice: 45498.7,
     image: "/images/products/bp-monitor.png",
     category: "Monitoring Equipment",
     brand: "MedTech Pro",
@@ -27,8 +27,8 @@ const wishlistItems = [
   {
     id: 3,
     name: "Hospital Bed Electric Adjustable",
-    price: 2499.99,
-    originalPrice: 2899.99,
+    price: 324998.7,
+    originalPrice: 376998.7,
     image: "/electric-adjustable-hospital-bed-medical-furniture.jpg",
     category: "Hospital Furniture",
     brand: "ComfortCare",
@@ -40,7 +40,7 @@ const wishlistItems = [
   {
     id: 7,
     name: "Microscope Laboratory",
-    price: 899.99,
+    price: 116998.7,
     originalPrice: 1099.99,
     image: "/laboratory-microscope-medical-research-equipment.jpg",
     category: "Laboratory Equipment",
@@ -152,7 +152,7 @@ export default function WishlistPage() {
                   <div className="flex items-center space-x-2 mb-3">
                     <span className="text-2xl font-bold text-foreground">${item.price}</span>
                     {item.originalPrice > item.price && (
-                      <span className="text-sm text-muted-foreground line-through">${item.originalPrice}</span>
+                      <span className="text-sm text-muted-foreground line-through">KES {item.originalPrice}</span>
                     )}
                   </div>
 
