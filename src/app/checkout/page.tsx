@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Separator } from "@/components/ui/separator"
-import { Header } from "@/components/header"
+
 import Link from "next/link"
 
 // Mock cart data for checkout
@@ -93,7 +93,7 @@ export default function CheckoutPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
+
 
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-6xl mx-auto">

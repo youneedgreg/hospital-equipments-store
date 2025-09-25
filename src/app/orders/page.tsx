@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Header } from "@/components/header"
+
 import Link from "next/link"
 
 // Mock orders data
@@ -111,7 +111,7 @@ export default function OrdersPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
+
 
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-6xl mx-auto">

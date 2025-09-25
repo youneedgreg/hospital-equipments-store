@@ -5,7 +5,7 @@ import { Heart, Trash2, Share2, Star } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Header } from "@/components/header"
+
 import { AddToCartButton } from "@/components/add-to-cart-button"
 import Link from "next/link"
 
@@ -68,7 +68,6 @@ export default function WishlistPage() {
   if (items.length === 0) {
     return (
       <div className="min-h-screen bg-background">
-        <Header />
         <div className="container mx-auto px-4 py-16">
           <div className="max-w-2xl mx-auto text-center">
             <Heart className="w-24 h-24 text-muted-foreground mx-auto mb-6" />
@@ -87,7 +86,6 @@ export default function WishlistPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
 
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-6xl mx-auto">

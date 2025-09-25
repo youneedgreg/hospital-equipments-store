@@ -10,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { Separator } from "@/components/ui/separator"
-import { Header } from "@/components/header"
+
 
 // Mock user data
 const userData = {
@@ -110,7 +110,7 @@ export default function AccountPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
+
 
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-6xl mx-auto">

@@ -18,7 +18,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { Progress } from "@/components/ui/progress"
-import { Header } from "@/components/header"
+
 import Link from "next/link"
 
 // Mock order data
@@ -153,7 +153,7 @@ export default function OrderTrackingPage({ params }: { params: { id: string } }
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
+
 
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">

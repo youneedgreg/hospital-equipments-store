@@ -44,11 +44,20 @@ export function Header() {
             <Link href="/categories" className="text-foreground hover:text-primary transition-colors">
               Categories
             </Link>
-            <Link href="/about" className="text-foreground hover:text-primary transition-colors">
-              About
+            <Link href="/account" className="text-foreground hover:text-primary transition-colors">
+              Account
             </Link>
-            <Link href="/contact" className="text-foreground hover:text-primary transition-colors">
-              Contact
+            <Link href="/orders" className="text-foreground hover:text-primary transition-colors">
+              Orders
+            </Link>
+            <Link href="/wishlist" className="text-foreground hover:text-primary transition-colors">
+              Wishlist
+            </Link>
+            <Link href="/support" className="text-foreground hover:text-primary transition-colors">
+              Support
+            </Link>
+            <Link href="/admin" className="text-foreground hover:text-primary transition-colors">
+              Admin
             </Link>
           </nav>
 

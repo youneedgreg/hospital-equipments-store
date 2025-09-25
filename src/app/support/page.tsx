@@ -24,7 +24,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
-import { Header } from "@/components/header"
+
 
 // Mock FAQ data
 const faqs = [
@@ -125,7 +125,7 @@ export default function SupportPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
+
 
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-6xl mx-auto">

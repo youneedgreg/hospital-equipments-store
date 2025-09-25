@@ -21,7 +21,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { AdminHeader } from "@/components/admin-header"
+
 
 // Mock data for admin dashboard
 const dashboardStats = {
@@ -178,7 +178,7 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-background">
-      <AdminHeader />
+
 
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">

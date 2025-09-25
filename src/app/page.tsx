@@ -5,7 +5,7 @@ import { Heart, Star, Filter } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Header } from "@/components/header"
+
 import { AddToCartButton } from "@/components/add-to-cart-button"
 import Link from "next/link"
 
@@ -80,7 +80,7 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <Header />
+
 
       {/* Hero Section */}
       <section className="bg-gradient-to-br from-primary/5 to-secondary/10 py-16">

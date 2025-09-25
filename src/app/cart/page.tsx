@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
-import { Header } from "@/components/header"
+
 import Link from "next/link"
 
 // Mock cart data
@@ -80,7 +80,7 @@ export default function CartPage() {
   if (cartItems.length === 0) {
     return (
       <div className="min-h-screen bg-background">
-        <Header />
+
         <div className="container mx-auto px-4 py-16">
           <div className="max-w-2xl mx-auto text-center">
             <ShoppingCart className="w-24 h-24 text-muted-foreground mx-auto mb-6" />
