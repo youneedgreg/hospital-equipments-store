@@ -73,7 +73,7 @@ export default function WishlistPage() {
             <Heart className="w-24 h-24 text-muted-foreground mx-auto mb-6" />
             <h1 className="text-3xl font-bold text-foreground mb-4">Your Wishlist is Empty</h1>
             <p className="text-muted-foreground mb-8">
-              Save items you're interested in to your wishlist and come back to them later.
+              Save items you&apos;re interested in to your wishlist and come back to them later.
             </p>
             <Button size="lg" asChild>
               <Link href="/products">Browse Equipment</Link>
@@ -179,7 +179,7 @@ export default function WishlistPage() {
             <h2 className="text-2xl font-bold text-foreground mb-6">You Might Also Like</h2>
             <div className="text-center py-12 border-2 border-dashed border-border rounded-lg">
               <p className="text-muted-foreground mb-4">
-                Based on your wishlist, we'll show personalized recommendations here.
+                Based on your wishlist, we&apos;ll show personalized recommendations here.
               </p>
               <Button variant="outline" asChild>
                 <Link href="/products">Browse More Products</Link>

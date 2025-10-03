@@ -128,7 +128,7 @@ const orderData = {
   ],
 }
 
-export default function OrderTrackingPage({ params }: { params: { id: string } }) {
+export default function OrderTrackingPage() {
   const [showFullTimeline, setShowFullTimeline] = useState(false)
 
   const getStatusProgress = () => {

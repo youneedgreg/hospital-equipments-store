@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import Link from "next/link"
 import { User, Package, CreditCard, MapPin, Bell, Shield, Edit, Save, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -261,7 +262,7 @@ export default function AccountPage() {
                             </Badge>
                           </div>
                           <Button variant="outline" size="sm" asChild>
-                            <a href={`/orders/${order.id}`}>View Details</a>
+                            <Link href={`/orders/${order.id}`}>View Details</Link>
                           </Button>
                         </div>
                       </div>
@@ -269,7 +270,7 @@ export default function AccountPage() {
                   </div>
                   <div className="mt-6 text-center">
                     <Button variant="outline" asChild>
-                      <a href="/orders">View All Orders</a>
+                      <Link href="/orders">View All Orders</Link>
                     </Button>
                   </div>
                 </CardContent>

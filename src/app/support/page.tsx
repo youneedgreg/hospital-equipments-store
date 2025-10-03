@@ -119,7 +119,7 @@ export default function SupportPage() {
     e.preventDefault()
     // Handle form submission
     console.log("Contact form submitted:", contactForm)
-    alert("Thank you for contacting us! We'll get back to you within 24 hours.")
+    alert("Thank you for contacting us! We&apos;ll get back to you within 24 hours.")
     setContactForm({ name: "", email: "", subject: "", category: "", message: "" })
   }
 
@@ -239,7 +239,7 @@ export default function SupportPage() {
                 <CardHeader>
                   <CardTitle>Send us a message</CardTitle>
                   <CardDescription>
-                    Can't find what you're looking for? Send us a detailed message and we'll get back to you.
+                    Can&apos;t find what you&apos;re looking for? Send us a detailed message and we&apos;ll get back to you.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>

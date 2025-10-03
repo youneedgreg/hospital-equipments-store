@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 
 import Link from "next/link"
+import { Header } from "@/components/header"
 
 // Mock cart data
 const initialCartItems = [
@@ -80,13 +81,14 @@ export default function CartPage() {
   if (cartItems.length === 0) {
     return (
       <div className="min-h-screen bg-background">
+        <Header />
 
         <div className="container mx-auto px-4 py-16">
           <div className="max-w-2xl mx-auto text-center">
             <ShoppingCart className="w-24 h-24 text-muted-foreground mx-auto mb-6" />
             <h1 className="text-3xl font-bold text-foreground mb-4">Your Cart is Empty</h1>
             <p className="text-muted-foreground mb-8">
-              Looks like you haven't added any medical equipment to your cart yet.
+              Looks like you haven&apos;t added any medical equipment to your cart yet.
             </p>
             <Button size="lg" asChild>
               <Link href="/products">

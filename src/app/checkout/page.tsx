@@ -370,7 +370,11 @@ export default function CheckoutPage() {
                     )}
 
                     <div className="flex items-center space-x-2">
-                      <Checkbox id="sameAsBilling" checked={sameAsBilling} onCheckedChange={setSameAsBilling} />
+                      <Checkbox id="sameAsBilling" checked={sameAsBilling} onCheckedChange={(checked) => {
+                        if (typeof checked === 'boolean') {
+                          setSameAsBilling(checked)
+                        }
+                      }} />
                       <Label htmlFor="sameAsBilling">Billing address same as shipping</Label>
                     </div>
 

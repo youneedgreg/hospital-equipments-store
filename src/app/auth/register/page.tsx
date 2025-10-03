@@ -206,7 +206,11 @@ export default function RegisterPage() {
                 </div>
 
                 <div className="flex items-start space-x-2">
-                  <Checkbox id="terms" checked={agreeToTerms} onCheckedChange={setAgreeToTerms} className="mt-1" />
+                  <Checkbox id="terms" checked={agreeToTerms} onCheckedChange={(checked) => {
+                    if (typeof checked === 'boolean') {
+                      setAgreeToTerms(checked)
+                    }
+                  }} className="mt-1" />
                   <Label htmlFor="terms" className="text-sm leading-relaxed">
                     I agree to the{" "}
                     <Link href="/terms" className="text-primary hover:underline">

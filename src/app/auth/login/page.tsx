@@ -97,7 +97,11 @@ export default function LoginPage() {
 
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
-                    <Checkbox id="remember" checked={rememberMe} onCheckedChange={setRememberMe} />
+                    <Checkbox id="remember" checked={rememberMe} onCheckedChange={(checked) => {
+                      if (typeof checked === 'boolean') {
+                        setRememberMe(checked)
+                      }
+                    }} />
                     <Label htmlFor="remember" className="text-sm">
                       Remember me
                     </Label>
@@ -156,7 +160,7 @@ export default function LoginPage() {
 
             <CardFooter className="text-center">
               <p className="text-sm text-muted-foreground">
-                Don't have an account?{" "}
+                Don&apos;t have an account?{" "}
                 <Link href="/auth/register" className="text-primary hover:underline font-medium">
                   Sign up here
                 </Link>
