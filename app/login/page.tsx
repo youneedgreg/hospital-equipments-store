@@ -11,25 +11,32 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Eye, EyeOff, Loader2 } from "lucide-react"
+import { signIn } from "@/lib/actions/auth"
+import { useToast } from "@/hooks/use-toast"
 
 export default function LoginPage() {
   const router = useRouter()
+  const { toast } = useToast()
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [activeTab, setActiveTab] = useState("buyer")
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setIsLoading(true)
-    // Simulate login
-    await new Promise((resolve) => setTimeout(resolve, 1500))
-    setIsLoading(false)
 
-    if (activeTab === "buyer") {
-      router.push("/dashboard/buyer")
-    } else {
-      router.push("/dashboard/supplier")
+    const formData = new FormData(e.currentTarget)
+    const result = await signIn(formData)
+
+    if (result?.error) {
+      toast({
+        title: "Login failed",
+        description: result.error,
+        variant: "destructive",
+      })
+      setIsLoading(false)
     }
+    // If successful, redirect happens in the server action
   }
 
   return (
@@ -55,7 +62,7 @@ export default function LoginPage() {
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="buyer-email">Email address</Label>
-                  <Input id="buyer-email" type="email" placeholder="you@hospital.co.ke" required />
+                  <Input id="buyer-email" name="email" type="email" placeholder="you@hospital.co.ke" required />
                 </div>
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
@@ -67,6 +74,7 @@ export default function LoginPage() {
                   <div className="relative">
                     <Input
                       id="buyer-password"
+                      name="password"
                       type={showPassword ? "text" : "password"}
                       placeholder="••••••••"
                       required
@@ -91,7 +99,7 @@ export default function LoginPage() {
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="supplier-email">Business Email</Label>
-                  <Input id="supplier-email" type="email" placeholder="you@medsupply.co.ke" required />
+                  <Input id="supplier-email" name="email" type="email" placeholder="you@medsupply.co.ke" required />
                 </div>
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
@@ -103,6 +111,7 @@ export default function LoginPage() {
                   <div className="relative">
                     <Input
                       id="supplier-password"
+                      name="password"
                       type={showPassword ? "text" : "password"}
                       placeholder="••••••••"
                       required

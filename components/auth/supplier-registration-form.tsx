@@ -10,57 +10,81 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 import { Eye, EyeOff, Loader2 } from "lucide-react"
+import { signUp } from "@/lib/actions/auth"
+import { useToast } from "@/hooks/use-toast"
 
 export function SupplierRegistrationForm() {
   const router = useRouter()
+  const { toast } = useToast()
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setIsLoading(true)
-    await new Promise((resolve) => setTimeout(resolve, 1500))
-    setIsLoading(false)
-    router.push("/dashboard/supplier")
+
+    const formData = new FormData(e.currentTarget)
+    formData.append("role", "supplier")
+    formData.append("fullName", formData.get("contact-name") as string)
+    formData.append("businessName", formData.get("business-name") as string)
+    formData.append("contactPerson", formData.get("contact-name") as string)
+    formData.append("position", formData.get("position") as string)
+    formData.append("businessEmail", formData.get("business-email") as string)
+    formData.append("businessPhone", formData.get("business-phone") as string)
+    formData.append("kraPin", formData.get("kra-pin") as string)
+    formData.append("location", formData.get("location") as string)
+    formData.append("businessAddress", formData.get("business-address") as string)
+
+    const result = await signUp(formData)
+
+    if (result?.error) {
+      toast({
+        title: "Registration failed",
+        description: result.error,
+        variant: "destructive",
+      })
+      setIsLoading(false)
+    }
+    // If successful, redirect happens in the server action
   }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-2">
         <Label htmlFor="business-name">Business Name</Label>
-        <Input id="business-name" placeholder="MedSupply Kenya Ltd" required />
+        <Input id="business-name" name="business-name" placeholder="MedSupply Kenya Ltd" required />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
           <Label htmlFor="contact-name">Contact Person</Label>
-          <Input id="contact-name" placeholder="Jane Muthoni" required />
+          <Input id="contact-name" name="contact-name" placeholder="Jane Muthoni" required />
         </div>
         <div className="space-y-2">
           <Label htmlFor="position">Position</Label>
-          <Input id="position" placeholder="Managing Director" required />
+          <Input id="position" name="position" placeholder="Managing Director" required />
         </div>
       </div>
 
       <div className="space-y-2">
         <Label htmlFor="business-email">Business Email</Label>
-        <Input id="business-email" type="email" placeholder="contact@medsupply.co.ke" required />
+        <Input id="business-email" name="business-email" type="email" placeholder="contact@medsupply.co.ke" required />
       </div>
 
       <div className="space-y-2">
         <Label htmlFor="business-phone">Business Phone</Label>
-        <Input id="business-phone" type="tel" placeholder="+254 700 000 000" required />
+        <Input id="business-phone" name="business-phone" type="tel" placeholder="+254 700 000 000" required />
       </div>
 
       <div className="space-y-2">
         <Label htmlFor="kra-pin">KRA PIN</Label>
-        <Input id="kra-pin" placeholder="A000000000A" required />
+        <Input id="kra-pin" name="kra-pin" placeholder="A000000000A" required />
         <p className="text-xs text-muted-foreground">Required for verification. We verify all suppliers.</p>
       </div>
 
       <div className="space-y-2">
         <Label htmlFor="location">Location</Label>
-        <Select>
+        <Select name="location">
           <SelectTrigger>
             <SelectValue placeholder="Select county" />
           </SelectTrigger>
@@ -77,13 +101,13 @@ export function SupplierRegistrationForm() {
 
       <div className="space-y-2">
         <Label htmlFor="business-address">Business Address</Label>
-        <Textarea id="business-address" placeholder="Industrial Area, Nairobi" rows={2} required />
+        <Textarea id="business-address" name="business-address" placeholder="Industrial Area, Nairobi" rows={2} required />
       </div>
 
       <div className="space-y-2">
         <Label htmlFor="supplier-password">Password</Label>
         <div className="relative">
-          <Input id="supplier-password" type={showPassword ? "text" : "password"} placeholder="••••••••" required />
+          <Input id="supplier-password" name="password" type={showPassword ? "text" : "password"} placeholder="••••••••" required minLength={8} />
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
@@ -96,7 +120,7 @@ export function SupplierRegistrationForm() {
 
       <div className="space-y-2">
         <Label htmlFor="supplier-confirm-password">Confirm Password</Label>
-        <Input id="supplier-confirm-password" type="password" placeholder="••••••••" required />
+        <Input id="supplier-confirm-password" name="confirm-password" type="password" placeholder="••••••••" required />
       </div>
 
       <div className="flex items-start gap-2 pt-2">

@@ -5,8 +5,18 @@ import { useState } from "react"
 import { LogoIcon } from "./icons"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { useCart } from "@/lib/cart-context"
-import { Menu, ShoppingCart, User } from "lucide-react"
+import { useUser } from "@/lib/user-context"
+import { signOut } from "@/lib/actions/auth"
+import { Menu, ShoppingCart, User, LogOut, Settings } from "lucide-react"
 
 const navLinks = [
   { href: "/products", label: "Products" },
@@ -18,6 +28,11 @@ const navLinks = [
 export function Header() {
   const [open, setOpen] = useState(false)
   const { totalItems } = useCart()
+  const { user, profile } = useUser()
+
+  const handleSignOut = async () => {
+    await signOut()
+  }
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -51,21 +66,55 @@ export function Header() {
             </Button>
           </Link>
 
-          <Link href="/login" className="hidden sm:block">
-            <Button variant="ghost" size="icon">
-              <User className="h-5 w-5" />
-            </Button>
-          </Link>
+          {user ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="hidden sm:block">
+                  <User className="h-5 w-5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>
+                  {profile?.full_name || user.email}
+                  {profile?.role && (
+                    <span className="block text-xs text-muted-foreground capitalize">{profile.role}</span>
+                  )}
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link href={`/dashboard/${profile?.role || "buyer"}`}>
+                    <Settings className="mr-2 h-4 w-4" />
+                    Dashboard
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleSignOut}>
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Sign Out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <>
+              <Link href="/login" className="hidden sm:block">
+                <Button variant="ghost" size="icon">
+                  <User className="h-5 w-5" />
+                </Button>
+              </Link>
 
-          <Link href="/login" className="hidden md:block">
-            <Button variant="outline" size="sm">
-              Login
-            </Button>
-          </Link>
+              <Link href="/login" className="hidden md:block">
+                <Button variant="outline" size="sm">
+                  Login
+                </Button>
+              </Link>
+            </>
+          )}
 
-          <Link href="/register/supplier" className="hidden lg:block">
-            <Button size="sm">Become a Supplier</Button>
-          </Link>
+          {!user && (
+            <Link href="/register" className="hidden lg:block">
+              <Button size="sm">Become a Supplier</Button>
+            </Link>
+          )}
 
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild className="md:hidden">

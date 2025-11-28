@@ -34,6 +34,7 @@ BIOSYTEMS is a comprehensive e-commerce platform designed specifically for the m
 
 - **Framework**: [Next.js 16](https://nextjs.org/) (App Router)
 - **Language**: TypeScript
+- **Backend**: [Supabase](https://supabase.com) (PostgreSQL, Auth, Storage)
 - **Styling**: Tailwind CSS 4
 - **UI Components**: Radix UI primitives with custom components
 - **Form Handling**: React Hook Form with Zod validation
@@ -217,12 +218,41 @@ The easiest way to deploy this Next.js application is using [Vercel](https://ver
 
 For more deployment options, see the [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying).
 
+## 🔧 Supabase Integration
+
+This application uses Supabase for:
+- **Authentication**: User signup, login, and session management
+- **Database**: PostgreSQL database with Row Level Security (RLS)
+- **Storage**: File storage for product images
+- **Real-time**: Real-time updates for cart and orders
+
+### Quick Setup
+
+1. **Create a Supabase project** at [supabase.com](https://supabase.com)
+2. **Set up environment variables** in `.env.local`:
+   ```env
+   NEXT_PUBLIC_SUPABASE_URL=your_project_url
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
+   SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+   NEXT_PUBLIC_SITE_URL=http://localhost:3000
+   ```
+3. **Run the database schema**:
+   - Go to Supabase SQL Editor
+   - Copy and paste contents of `supabase/schema.sql`
+   - Execute the SQL
+4. **Set up storage bucket**:
+   - Create a bucket named `product-images`
+   - Make it public
+   - Set up storage policies (see `SUPABASE_SETUP.md`)
+
+For detailed setup instructions, see [SUPABASE_SETUP.md](./SUPABASE_SETUP.md)
+
 ## 📝 Development Notes
 
-- The application currently uses mock data (`lib/data.ts`)
-- Authentication is not yet implemented (UI only)
-- Payment processing is not yet integrated
-- Backend API integration is pending
+- Authentication is fully implemented with Supabase
+- Database schema is defined in `supabase/schema.sql`
+- Cart supports both authenticated (Supabase) and guest (localStorage) users
+- Payment processing integration is pending
 
 ## 🤝 Contributing
 

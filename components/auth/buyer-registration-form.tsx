@@ -9,18 +9,36 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Eye, EyeOff, Loader2 } from "lucide-react"
+import { signUp } from "@/lib/actions/auth"
+import { useToast } from "@/hooks/use-toast"
 
 export function BuyerRegistrationForm() {
   const router = useRouter()
+  const { toast } = useToast()
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setIsLoading(true)
-    await new Promise((resolve) => setTimeout(resolve, 1500))
-    setIsLoading(false)
-    router.push("/dashboard/buyer")
+
+    const formData = new FormData(e.currentTarget)
+    formData.append("role", "buyer")
+    formData.append("fullName", `${formData.get("first-name")} ${formData.get("last-name")}`)
+    formData.append("organizationName", formData.get("organization") as string || "")
+    formData.append("organizationType", formData.get("organization-type") as string || "")
+
+    const result = await signUp(formData)
+
+    if (result?.error) {
+      toast({
+        title: "Registration failed",
+        description: result.error,
+        variant: "destructive",
+      })
+      setIsLoading(false)
+    }
+    // If successful, redirect happens in the server action
   }
 
   return (
@@ -28,32 +46,32 @@ export function BuyerRegistrationForm() {
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
           <Label htmlFor="first-name">First Name</Label>
-          <Input id="first-name" placeholder="John" required />
+          <Input id="first-name" name="first-name" placeholder="John" required />
         </div>
         <div className="space-y-2">
           <Label htmlFor="last-name">Last Name</Label>
-          <Input id="last-name" placeholder="Doe" required />
+          <Input id="last-name" name="last-name" placeholder="Doe" required />
         </div>
       </div>
 
       <div className="space-y-2">
         <Label htmlFor="email">Email Address</Label>
-        <Input id="email" type="email" placeholder="you@hospital.co.ke" required />
+        <Input id="email" name="email" type="email" placeholder="you@hospital.co.ke" required />
       </div>
 
       <div className="space-y-2">
         <Label htmlFor="phone">Phone Number</Label>
-        <Input id="phone" type="tel" placeholder="+254 700 000 000" required />
+        <Input id="phone" name="phone" type="tel" placeholder="+254 700 000 000" required />
       </div>
 
       <div className="space-y-2">
         <Label htmlFor="organization">Organization (Optional)</Label>
-        <Input id="organization" placeholder="Nairobi Regional Hospital" />
+        <Input id="organization" name="organization" placeholder="Nairobi Regional Hospital" />
       </div>
 
       <div className="space-y-2">
         <Label htmlFor="organization-type">Organization Type</Label>
-        <Select>
+        <Select name="organization-type">
           <SelectTrigger>
             <SelectValue placeholder="Select type" />
           </SelectTrigger>
@@ -71,7 +89,7 @@ export function BuyerRegistrationForm() {
       <div className="space-y-2">
         <Label htmlFor="password">Password</Label>
         <div className="relative">
-          <Input id="password" type={showPassword ? "text" : "password"} placeholder="••••••••" required />
+          <Input id="password" name="password" type={showPassword ? "text" : "password"} placeholder="••••••••" required minLength={8} />
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
@@ -87,7 +105,7 @@ export function BuyerRegistrationForm() {
 
       <div className="space-y-2">
         <Label htmlFor="confirm-password">Confirm Password</Label>
-        <Input id="confirm-password" type="password" placeholder="••••••••" required />
+        <Input id="confirm-password" name="confirm-password" type="password" placeholder="••••••••" required />
       </div>
 
       <div className="flex items-start gap-2 pt-2">
