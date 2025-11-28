@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import React, { useState } from "react"
 import { DashboardSidebar } from "@/components/dashboard/dashboard-sidebar"
 import { DashboardHeader } from "@/components/dashboard/dashboard-header"
 import { DashboardMobileNav } from "@/components/dashboard/dashboard-mobile-nav"
@@ -26,19 +26,45 @@ import {
 import Link from "next/link"
 
 const adminNavItems = [
-  { href: "/dashboard/admin", label: "Overview", icon: BarChart3 },
-  { href: "/dashboard/admin/users", label: "Users", icon: Users },
-  { href: "/dashboard/admin/suppliers", label: "Suppliers", icon: Building2 },
-  { href: "/dashboard/admin/products", label: "Products", icon: Package },
-  { href: "/dashboard/admin/orders", label: "Orders", icon: ShoppingCart },
-  { href: "/dashboard/admin/verifications", label: "Verifications", icon: ShieldCheck },
+  { href: "/dashboard/admin", label: "Overview", icon: <BarChart3 className="h-4 w-4" /> },
+  { href: "/dashboard/admin/users", label: "Users", icon: <Users className="h-4 w-4" /> },
+  { href: "/dashboard/admin/suppliers", label: "Suppliers", icon: <Building2 className="h-4 w-4" /> },
+  { href: "/dashboard/admin/products", label: "Products", icon: <Package className="h-4 w-4" /> },
+  { href: "/dashboard/admin/orders", label: "Orders", icon: <ShoppingCart className="h-4 w-4" /> },
+  { href: "/dashboard/admin/verifications", label: "Verifications", icon: <ShieldCheck className="h-4 w-4" /> },
 ]
 
+type OrderStatus = "completed" | "processing" | "pending" | string
+
 const recentOrders = [
-  { id: "ORD-2024-001", buyer: "Nairobi Hospital", amount: 125000, status: "completed", date: "2024-01-15" },
-  { id: "ORD-2024-002", buyer: "Kenyatta National", amount: 89500, status: "processing", date: "2024-01-15" },
-  { id: "ORD-2024-003", buyer: "Mombasa Clinic", amount: 45000, status: "pending", date: "2024-01-14" },
-  { id: "ORD-2024-004", buyer: "Eldoret Medical", amount: 156000, status: "completed", date: "2024-01-14" },
+  {
+    id: "ORD-2024-001",
+    buyer: "Nairobi Hospital",
+    amount: 125000,
+    status: "completed" as OrderStatus,
+    date: "2024-01-15",
+  },
+  {
+    id: "ORD-2024-002",
+    buyer: "Kenyatta National",
+    amount: 89500,
+    status: "processing" as OrderStatus,
+    date: "2024-01-15",
+  },
+  {
+    id: "ORD-2024-003",
+    buyer: "Mombasa Clinic",
+    amount: 45000,
+    status: "pending" as OrderStatus,
+    date: "2024-01-14",
+  },
+  {
+    id: "ORD-2024-004",
+    buyer: "Eldoret Medical",
+    amount: 156000,
+    status: "completed" as OrderStatus,
+    date: "2024-01-14",
+  },
 ]
 
 const pendingVerifications = [
@@ -56,7 +82,7 @@ const topSuppliers = [
 export default function AdminDashboardPage() {
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
 
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (status: OrderStatus) => {
     switch (status) {
       case "completed":
         return <Badge className="bg-green-100 text-green-700 hover:bg-green-100">Completed</Badge>
@@ -90,11 +116,29 @@ export default function AdminDashboardPage() {
               value="KES 12.5M"
               change="+18.2%"
               changeType="positive"
-              icon={DollarSign}
+              icon={<DollarSign className="h-4 w-4 text-muted-foreground" />}
             />
-            <StatsCard title="Total Orders" value="1,245" change="+12.5%" changeType="positive" icon={ShoppingCart} />
-            <StatsCard title="Active Suppliers" value="89" change="+5" changeType="positive" icon={Building2} />
-            <StatsCard title="Registered Buyers" value="456" change="+23" changeType="positive" icon={Users} />
+            <StatsCard
+              title="Total Orders"
+              value="1,245"
+              change="+12.5%"
+              changeType="positive"
+              icon={<ShoppingCart className="h-4 w-4 text-muted-foreground" />}
+            />
+            <StatsCard
+              title="Active Suppliers"
+              value="89"
+              change="+5"
+              changeType="positive"
+              icon={<Building2 className="h-4 w-4 text-muted-foreground" />}
+            />
+            <StatsCard
+              title="Registered Buyers"
+              value="456"
+              change="+23"
+              changeType="positive"
+              icon={<Users className="h-4 w-4 text-muted-foreground" />}
+            />
           </div>
 
           {/* Alerts Section */}
@@ -207,7 +251,9 @@ export default function AdminDashboardPage() {
                     <div key={item.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                       <div className="flex items-center gap-3">
                         <Avatar className="h-10 w-10">
-                          <AvatarFallback className="bg-primary/10 text-primary">{item.name.charAt(0)}</AvatarFallback>
+                          <AvatarFallback className="bg-primary/10 text-primary">
+                            {item.name.charAt(0)}
+                          </AvatarFallback>
                         </Avatar>
                         <div>
                           <p className="font-medium text-sm">{item.name}</p>
@@ -260,7 +306,7 @@ export default function AdminDashboardPage() {
                     <div className="grid grid-cols-2 gap-2 text-sm">
                       <div>
                         <p className="text-muted-foreground text-xs">Revenue</p>
-                        <p className="font-semibold">KES {(supplier.sales / 1000000).toFixed(1)}M</p>
+                        <p className="font-semibold">KES {(supplier.sales / 1_000_000).toFixed(1)}M</p>
                       </div>
                       <div>
                         <p className="text-muted-foreground text-xs">Orders</p>

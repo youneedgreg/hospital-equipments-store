@@ -98,7 +98,7 @@ const pendingVerifications = [
 
 const approvedVerifications = [
   { id: 4, companyName: "MediSupply Kenya", approvedDate: "2024-01-10", verifiedBy: "Admin John" },
-  { id: 5, companyName: "LabEquip Africa", approvedDate: "2024-01-08", verifiedBy: "Admin Sarah" },
+  { id: 5, companyName: "LabEquip Africa", approvedDate: "2024-01-08", verifiedBy: "Admin Gregory" },
   { id: 6, companyName: "PharmaCare Ltd", approvedDate: "2024-01-05", verifiedBy: "Admin John" },
 ]
 

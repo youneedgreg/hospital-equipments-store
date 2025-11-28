@@ -49,8 +49,8 @@ const users = [
   },
   {
     id: 2,
-    name: "Sarah Ochieng",
-    email: "sarah@knh.go.ke",
+    name: "Gregory Odete",
+    email: "grego@knh.go.ke",
     organization: "Kenyatta National Hospital",
     type: "buyer",
     status: "active",
