@@ -1,0 +1,75 @@
+"use client"
+
+import type React from "react"
+
+import { useState } from "react"
+import Link from "next/link"
+import { LogoIcon } from "@/components/icons"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { ArrowLeft, Loader2, Mail } from "lucide-react"
+
+export default function ForgotPasswordPage() {
+  const [isLoading, setIsLoading] = useState(false)
+  const [isSubmitted, setIsSubmitted] = useState(false)
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsLoading(true)
+    await new Promise((resolve) => setTimeout(resolve, 1500))
+    setIsLoading(false)
+    setIsSubmitted(true)
+  }
+
+  return (
+    <div className="min-h-screen flex items-center justify-center px-4 py-12">
+      <div className="w-full max-w-sm">
+        <Link href="/" className="flex items-center gap-2 mb-8 justify-center">
+          <LogoIcon className="h-10 w-10" />
+          <span className="text-2xl font-bold">BIOSYTEMS</span>
+        </Link>
+
+        {!isSubmitted ? (
+          <>
+            <div className="text-center mb-8">
+              <h1 className="text-2xl font-bold tracking-tight">Forgot your password?</h1>
+              <p className="mt-2 text-muted-foreground">Enter your email and we'll send you a reset link</p>
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email">Email address</Label>
+                <Input id="email" type="email" placeholder="you@example.co.ke" required />
+              </div>
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Send Reset Link
+              </Button>
+            </form>
+          </>
+        ) : (
+          <div className="text-center">
+            <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-secondary/20">
+              <Mail className="h-8 w-8 text-secondary" />
+            </div>
+            <h1 className="text-2xl font-bold tracking-tight">Check your email</h1>
+            <p className="mt-2 text-muted-foreground">
+              We've sent a password reset link to your email address. The link will expire in 24 hours.
+            </p>
+            <Button variant="outline" className="mt-6 bg-transparent" onClick={() => setIsSubmitted(false)}>
+              Try another email
+            </Button>
+          </div>
+        )}
+
+        <div className="mt-8 text-center">
+          <Link href="/login" className="inline-flex items-center gap-1 text-sm text-primary hover:underline">
+            <ArrowLeft className="h-4 w-4" />
+            Back to login
+          </Link>
+        </div>
+      </div>
+    </div>
+  )
+}
