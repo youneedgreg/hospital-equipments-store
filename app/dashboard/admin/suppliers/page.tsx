@@ -137,7 +137,7 @@ export default function AdminSuppliersPage() {
         onClose={() => setMobileNavOpen(false)}
       />
 
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col lg:pl-64">
         <DashboardHeader title="Supplier Management" userType="admin" onMenuClick={() => setMobileNavOpen(true)} />
 
         <main className="flex-1 p-4 md:p-6 space-y-6">

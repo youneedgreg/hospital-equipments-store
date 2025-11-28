@@ -160,7 +160,7 @@ export default function AdminOrdersPage() {
         onClose={() => setMobileNavOpen(false)}
       />
 
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col lg:pl-64">
         <DashboardHeader title="Order Management" userType="admin" onMenuClick={() => setMobileNavOpen(true)} />
 
         <main className="flex-1 p-4 md:p-6 space-y-6">

@@ -43,6 +43,7 @@ const adminNavItems = [
   { href: "/dashboard/admin/products", label: "Products", icon: Package },
   { href: "/dashboard/admin/orders", label: "Orders", icon: ShoppingCart },
   { href: "/dashboard/admin/verifications", label: "Verifications", icon: ShieldCheck },
+  { href: "/dashboard/admin/reports", label: "Reports", icon: BarChart3 },
 ]
 
 const pendingVerifications = [
@@ -139,7 +140,7 @@ export default function AdminVerificationsPage() {
         onClose={() => setMobileNavOpen(false)}
       />
 
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col lg:pl-64">
         <DashboardHeader title="Supplier Verifications" userType="admin" onMenuClick={() => setMobileNavOpen(true)} />
 
         <main className="flex-1 p-4 md:p-6 space-y-6">

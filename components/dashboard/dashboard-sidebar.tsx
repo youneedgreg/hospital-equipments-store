@@ -1,22 +1,13 @@
 "use client"
 
 import type React from "react"
-
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { LogoIcon } from "@/components/icons"
 import { cn } from "@/lib/utils"
 import {
-  LayoutDashboard,
-  ShoppingBag,
-  User,
-  HelpCircle,
   LogOut,
   Package,
-  BarChart3,
-  Users,
-  CheckCircle,
-  Boxes,
 } from "lucide-react"
 
 interface SidebarLink {
@@ -26,39 +17,14 @@ interface SidebarLink {
 }
 
 interface DashboardSidebarProps {
-  type: "buyer" | "supplier" | "admin"
+  userType: "buyer" | "supplier" | "admin"
+  navItems: SidebarLink[]
 }
 
-const buyerLinks: SidebarLink[] = [
-  { href: "/dashboard/buyer", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/dashboard/buyer/orders", label: "My Orders", icon: ShoppingBag },
-  { href: "/dashboard/buyer/profile", label: "Profile & Settings", icon: User },
-  { href: "/dashboard/buyer/support", label: "Support / Help", icon: HelpCircle },
-]
-
-const supplierLinks: SidebarLink[] = [
-  { href: "/dashboard/supplier", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/dashboard/supplier/products", label: "My Products", icon: Package },
-  { href: "/dashboard/supplier/orders", label: "Orders", icon: ShoppingBag },
-  { href: "/dashboard/supplier/inventory", label: "Inventory", icon: Boxes },
-  { href: "/dashboard/supplier/profile", label: "Profile & KYC", icon: User },
-  { href: "/dashboard/supplier/support", label: "Support", icon: HelpCircle },
-]
-
-const adminLinks: SidebarLink[] = [
-  { href: "/dashboard/admin", label: "Overview", icon: LayoutDashboard },
-  { href: "/dashboard/admin/users", label: "Users", icon: Users },
-  { href: "/dashboard/admin/suppliers", label: "Suppliers", icon: CheckCircle },
-  { href: "/dashboard/admin/products", label: "Products", icon: Package },
-  { href: "/dashboard/admin/orders", label: "Orders", icon: ShoppingBag },
-  { href: "/dashboard/admin/reports", label: "Reports", icon: BarChart3 },
-]
-
-export function DashboardSidebar({ type }: DashboardSidebarProps) {
+export function DashboardSidebar({ userType, navItems }: DashboardSidebarProps) {
   const pathname = usePathname()
 
-  const links = type === "buyer" ? buyerLinks : type === "supplier" ? supplierLinks : adminLinks
-  const dashboardTitle = type === "buyer" ? "Buyer Portal" : type === "supplier" ? "Supplier Portal" : "Admin Panel"
+  const dashboardTitle = userType === "buyer" ? "Buyer Portal" : userType === "supplier" ? "Supplier Portal" : "Admin Panel"
 
   return (
     <aside className="hidden lg:flex lg:w-64 lg:flex-col lg:fixed lg:inset-y-0 bg-sidebar border-r border-sidebar-border">
@@ -74,9 +40,9 @@ export function DashboardSidebar({ type }: DashboardSidebarProps) {
       </div>
 
       <nav className="flex-1 px-3 pb-4 space-y-1">
-        {links.map((link) => {
+        {navItems.map((link) => {
           const isActive =
-            pathname === link.href || (link.href !== `/dashboard/${type}` && pathname.startsWith(link.href))
+            pathname === link.href || (link.href !== `/dashboard/${userType}` && pathname.startsWith(link.href))
           return (
             <Link
               key={link.href}
