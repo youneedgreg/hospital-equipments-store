@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Header } from "@/components/header"
@@ -21,9 +21,11 @@ type CheckoutStep = "address" | "payment" | "review"
 export default function CheckoutPage() {
   const router = useRouter()
   const { items, subtotal, clearCart } = useCart()
+
   const [currentStep, setCurrentStep] = useState<CheckoutStep>("address")
   const [isProcessing, setIsProcessing] = useState(false)
   const [paymentMethod, setPaymentMethod] = useState("mpesa")
+  const [mounted, setMounted] = useState(false)
 
   const [addressData, setAddressData] = useState({
     fullName: "",
@@ -38,7 +40,7 @@ export default function CheckoutPage() {
 
   const VAT_RATE = 0.16
   const vat = subtotal * VAT_RATE
-  const deliveryEstimate = subtotal > 50000 ? 0 : 2500
+  const deliveryEstimate = subtotal > 50_000 ? 0 : 2_500
   const total = subtotal + vat + deliveryEstimate
 
   const steps = [
@@ -46,6 +48,19 @@ export default function CheckoutPage() {
     { id: "payment", label: "Payment Method" },
     { id: "review", label: "Review & Confirm" },
   ]
+
+  // Mark when we've mounted on the client
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  // Redirect to cart on the client if the cart is empty
+  useEffect(() => {
+    if (!mounted) return
+    if (items.length === 0) {
+      router.replace("/cart")
+    }
+  }, [mounted, items.length, router])
 
   const handleAddressSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -65,8 +80,13 @@ export default function CheckoutPage() {
     router.push("/checkout/success")
   }
 
+  // While mounting / redirecting, render nothing to avoid SSR issues
+  if (!mounted) {
+    return null
+  }
+
+  // If items is empty on the client, we already triggered redirect above; avoid rendering the page
   if (items.length === 0) {
-    router.push("/cart")
     return null
   }
 
@@ -78,13 +98,13 @@ export default function CheckoutPage() {
           {/* Back Link */}
           <Link
             href="/cart"
-            className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-6"
+            className="mb-6 inline-flex items-center text-sm text-muted-foreground hover:text-foreground"
           >
-            <ChevronLeft className="h-4 w-4 mr-1" />
+            <ChevronLeft className="mr-1 h-4 w-4" />
             Back to Cart
           </Link>
 
-          <h1 className="text-3xl font-bold tracking-tight mb-8">Checkout</h1>
+          <h1 className="mb-8 text-3xl font-bold tracking-tight">Checkout</h1>
 
           {/* Steps Indicator */}
           <div className="mb-8">
@@ -97,15 +117,23 @@ export default function CheckoutPage() {
                         currentStep === step.id
                           ? "bg-primary text-primary-foreground"
                           : steps.findIndex((s) => s.id === currentStep) > index
-                            ? "bg-secondary text-secondary-foreground"
-                            : "bg-muted text-muted-foreground"
+                          ? "bg-secondary text-secondary-foreground"
+                          : "bg-muted text-muted-foreground"
                       }`}
                     >
-                      {steps.findIndex((s) => s.id === currentStep) > index ? <Check className="h-5 w-5" /> : index + 1}
+                      {steps.findIndex((s) => s.id === currentStep) > index ? (
+                        <Check className="h-5 w-5" />
+                      ) : (
+                        index + 1
+                      )}
                     </div>
-                    <span className="ml-2 text-sm font-medium hidden sm:block">{step.label}</span>
+                    <span className="ml-2 hidden text-sm font-medium sm:block">
+                      {step.label}
+                    </span>
                   </div>
-                  {index < steps.length - 1 && <div className="w-12 sm:w-24 h-0.5 mx-2 sm:mx-4 bg-border" />}
+                  {index < steps.length - 1 && (
+                    <div className="mx-2 h-0.5 w-12 bg-border sm:mx-4 sm:w-24" />
+                  )}
                 </div>
               ))}
             </div>
@@ -116,8 +144,11 @@ export default function CheckoutPage() {
             <div className="lg:col-span-2">
               {/* Address Step */}
               {currentStep === "address" && (
-                <form onSubmit={handleAddressSubmit} className="rounded-xl border border-border bg-card p-6">
-                  <h2 className="text-xl font-semibold mb-6">Delivery Address</h2>
+                <form
+                  onSubmit={handleAddressSubmit}
+                  className="rounded-xl border border-border bg-card p-6"
+                >
+                  <h2 className="mb-6 text-xl font-semibold">Delivery Address</h2>
 
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div className="space-y-2">
@@ -125,7 +156,9 @@ export default function CheckoutPage() {
                       <Input
                         id="fullName"
                         value={addressData.fullName}
-                        onChange={(e) => setAddressData({ ...addressData, fullName: e.target.value })}
+                        onChange={(e) =>
+                          setAddressData({ ...addressData, fullName: e.target.value })
+                        }
                         required
                       />
                     </div>
@@ -136,7 +169,9 @@ export default function CheckoutPage() {
                         type="tel"
                         placeholder="+254"
                         value={addressData.phone}
-                        onChange={(e) => setAddressData({ ...addressData, phone: e.target.value })}
+                        onChange={(e) =>
+                          setAddressData({ ...addressData, phone: e.target.value })
+                        }
                         required
                       />
                     </div>
@@ -146,7 +181,9 @@ export default function CheckoutPage() {
                         id="email"
                         type="email"
                         value={addressData.email}
-                        onChange={(e) => setAddressData({ ...addressData, email: e.target.value })}
+                        onChange={(e) =>
+                          setAddressData({ ...addressData, email: e.target.value })
+                        }
                         required
                       />
                     </div>
@@ -156,7 +193,9 @@ export default function CheckoutPage() {
                         id="organization"
                         placeholder="Hospital / Clinic name"
                         value={addressData.organization}
-                        onChange={(e) => setAddressData({ ...addressData, organization: e.target.value })}
+                        onChange={(e) =>
+                          setAddressData({ ...addressData, organization: e.target.value })
+                        }
                       />
                     </div>
                     <div className="space-y-2 sm:col-span-2">
@@ -165,7 +204,9 @@ export default function CheckoutPage() {
                         id="address"
                         placeholder="Building, Street, Area"
                         value={addressData.address}
-                        onChange={(e) => setAddressData({ ...addressData, address: e.target.value })}
+                        onChange={(e) =>
+                          setAddressData({ ...addressData, address: e.target.value })
+                        }
                         required
                       />
                     </div>
@@ -174,7 +215,9 @@ export default function CheckoutPage() {
                       <Input
                         id="city"
                         value={addressData.city}
-                        onChange={(e) => setAddressData({ ...addressData, city: e.target.value })}
+                        onChange={(e) =>
+                          setAddressData({ ...addressData, city: e.target.value })
+                        }
                         required
                       />
                     </div>
@@ -183,7 +226,9 @@ export default function CheckoutPage() {
                       <Input
                         id="county"
                         value={addressData.county}
-                        onChange={(e) => setAddressData({ ...addressData, county: e.target.value })}
+                        onChange={(e) =>
+                          setAddressData({ ...addressData, county: e.target.value })
+                        }
                         required
                       />
                     </div>
@@ -194,7 +239,9 @@ export default function CheckoutPage() {
                         placeholder="Any special delivery instructions..."
                         rows={2}
                         value={addressData.notes}
-                        onChange={(e) => setAddressData({ ...addressData, notes: e.target.value })}
+                        onChange={(e) =>
+                          setAddressData({ ...addressData, notes: e.target.value })
+                        }
                       />
                     </div>
                   </div>
@@ -207,13 +254,20 @@ export default function CheckoutPage() {
 
               {/* Payment Step */}
               {currentStep === "payment" && (
-                <form onSubmit={handlePaymentSubmit} className="rounded-xl border border-border bg-card p-6">
-                  <h2 className="text-xl font-semibold mb-6">Payment Method</h2>
+                <form
+                  onSubmit={handlePaymentSubmit}
+                  className="rounded-xl border border-border bg-card p-6"
+                >
+                  <h2 className="mb-6 text-xl font-semibold">Payment Method</h2>
 
-                  <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod} className="space-y-4">
+                  <RadioGroup
+                    value={paymentMethod}
+                    onValueChange={setPaymentMethod}
+                    className="space-y-4"
+                  >
                     <label
                       htmlFor="mpesa"
-                      className={`flex items-start gap-4 rounded-lg border p-4 cursor-pointer transition-colors ${
+                      className={`flex cursor-pointer items-start gap-4 rounded-lg border p-4 transition-colors ${
                         paymentMethod === "mpesa"
                           ? "border-primary bg-primary/5"
                           : "border-border hover:border-primary/50"
@@ -224,15 +278,16 @@ export default function CheckoutPage() {
                         <div className="flex items-center gap-2">
                           <Smartphone className="h-5 w-5 text-secondary" />
                           <span className="font-medium">MPesa</span>
-                          <span className="text-xs bg-secondary/20 text-secondary px-2 py-0.5 rounded">
+                          <span className="rounded bg-secondary/20 px-2 py-0.5 text-xs text-secondary">
                             Recommended
                           </span>
                         </div>
-                        <p className="text-sm text-muted-foreground mt-1">
-                          Pay securely via MPesa STK Push. You'll receive a prompt on your phone to confirm the payment.
+                        <p className="mt-1 text-sm text-muted-foreground">
+                          Pay securely via MPesa STK Push. You'll receive a prompt on
+                          your phone to confirm the payment.
                         </p>
                         {paymentMethod === "mpesa" && (
-                          <div className="mt-4 p-3 rounded-lg bg-muted/50">
+                          <div className="mt-4 rounded-lg bg-muted/50 p-3">
                             <Label htmlFor="mpesa-phone" className="text-sm">
                               MPesa Phone Number
                             </Label>
@@ -242,8 +297,9 @@ export default function CheckoutPage() {
                               className="mt-1"
                               defaultValue={addressData.phone}
                             />
-                            <p className="text-xs text-muted-foreground mt-2">
-                              An STK push will be sent to this number when you place the order.
+                            <p className="mt-2 text-xs text-muted-foreground">
+                              An STK push will be sent to this number when you place the
+                              order.
                             </p>
                           </div>
                         )}
@@ -252,7 +308,7 @@ export default function CheckoutPage() {
 
                     <label
                       htmlFor="bank"
-                      className={`flex items-start gap-4 rounded-lg border p-4 cursor-pointer transition-colors ${
+                      className={`flex cursor-pointer items-start gap-4 rounded-lg border p-4 transition-colors ${
                         paymentMethod === "bank"
                           ? "border-primary bg-primary/5"
                           : "border-border hover:border-primary/50"
@@ -264,11 +320,12 @@ export default function CheckoutPage() {
                           <Building2 className="h-5 w-5 text-primary" />
                           <span className="font-medium">Bank Transfer</span>
                         </div>
-                        <p className="text-sm text-muted-foreground mt-1">
-                          Transfer directly to our bank account. Order will be processed upon payment confirmation.
+                        <p className="mt-1 text-sm text-muted-foreground">
+                          Transfer directly to our bank account. Order will be processed
+                          upon payment confirmation.
                         </p>
                         {paymentMethod === "bank" && (
-                          <div className="mt-4 p-3 rounded-lg bg-muted/50 text-sm">
+                          <div className="mt-4 rounded-lg bg-muted/50 p-3 text-sm">
                             <p>
                               <span className="font-medium">Bank:</span> Equity Bank Kenya
                             </p>
@@ -278,7 +335,7 @@ export default function CheckoutPage() {
                             <p>
                               <span className="font-medium">Name:</span> BIOSYTEMS Ltd
                             </p>
-                            <p className="text-xs text-muted-foreground mt-2">
+                            <p className="mt-2 text-xs text-muted-foreground">
                               Include your order number as the reference.
                             </p>
                           </div>
@@ -288,7 +345,7 @@ export default function CheckoutPage() {
 
                     <label
                       htmlFor="card"
-                      className={`flex items-start gap-4 rounded-lg border p-4 cursor-pointer transition-colors ${
+                      className={`flex cursor-pointer items-start gap-4 rounded-lg border p-4 transition-colors ${
                         paymentMethod === "card"
                           ? "border-primary bg-primary/5"
                           : "border-border hover:border-primary/50"
@@ -300,15 +357,19 @@ export default function CheckoutPage() {
                           <CreditCard className="h-5 w-5 text-primary" />
                           <span className="font-medium">Credit/Debit Card</span>
                         </div>
-                        <p className="text-sm text-muted-foreground mt-1">
+                        <p className="mt-1 text-sm text-muted-foreground">
                           Pay with Visa, Mastercard, or other major cards.
                         </p>
                       </div>
                     </label>
                   </RadioGroup>
 
-                  <div className="flex gap-3 mt-6">
-                    <Button type="button" variant="outline" onClick={() => setCurrentStep("address")}>
+                  <div className="mt-6 flex gap-3">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setCurrentStep("address")}
+                    >
                       Back
                     </Button>
                     <Button type="submit">Review Order</Button>
@@ -321,13 +382,17 @@ export default function CheckoutPage() {
                 <div className="space-y-6">
                   {/* Delivery Details */}
                   <div className="rounded-xl border border-border bg-card p-6">
-                    <div className="flex items-center justify-between mb-4">
+                    <div className="mb-4 flex items-center justify-between">
                       <h2 className="text-xl font-semibold">Delivery Details</h2>
-                      <Button variant="ghost" size="sm" onClick={() => setCurrentStep("address")}>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setCurrentStep("address")}
+                      >
                         Edit
                       </Button>
                     </div>
-                    <div className="text-sm space-y-1">
+                    <div className="space-y-1 text-sm">
                       <p className="font-medium">{addressData.fullName}</p>
                       {addressData.organization && <p>{addressData.organization}</p>}
                       <p className="text-muted-foreground">{addressData.address}</p>
@@ -341,32 +406,45 @@ export default function CheckoutPage() {
 
                   {/* Payment Method */}
                   <div className="rounded-xl border border-border bg-card p-6">
-                    <div className="flex items-center justify-between mb-4">
+                    <div className="mb-4 flex items-center justify-between">
                       <h2 className="text-xl font-semibold">Payment Method</h2>
-                      <Button variant="ghost" size="sm" onClick={() => setCurrentStep("payment")}>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setCurrentStep("payment")}
+                      >
                         Edit
                       </Button>
                     </div>
                     <div className="flex items-center gap-2">
-                      {paymentMethod === "mpesa" && <Smartphone className="h-5 w-5 text-secondary" />}
-                      {paymentMethod === "bank" && <Building2 className="h-5 w-5 text-primary" />}
-                      {paymentMethod === "card" && <CreditCard className="h-5 w-5 text-primary" />}
+                      {paymentMethod === "mpesa" && (
+                        <Smartphone className="h-5 w-5 text-secondary" />
+                      )}
+                      {paymentMethod === "bank" && (
+                        <Building2 className="h-5 w-5 text-primary" />
+                      )}
+                      {paymentMethod === "card" && (
+                        <CreditCard className="h-5 w-5 text-primary" />
+                      )}
                       <span className="font-medium capitalize">
                         {paymentMethod === "mpesa"
                           ? "MPesa"
                           : paymentMethod === "bank"
-                            ? "Bank Transfer"
-                            : "Credit/Debit Card"}
+                          ? "Bank Transfer"
+                          : "Credit/Debit Card"}
                       </span>
                     </div>
                   </div>
 
                   {/* Order Items */}
                   <div className="rounded-xl border border-border bg-card p-6">
-                    <h2 className="text-xl font-semibold mb-4">Order Items</h2>
+                    <h2 className="mb-4 text-xl font-semibold">Order Items</h2>
                     <div className="divide-y">
                       {items.map((item) => (
-                        <div key={item.product.id} className="flex gap-4 py-4 first:pt-0 last:pb-0">
+                        <div
+                          key={item.product.id}
+                          className="flex gap-4 py-4 first:pt-0 last:pb-0"
+                        >
                           <div className="h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-muted">
                             <img
                               src={item.product.image || "/placeholder.svg"}
@@ -375,21 +453,32 @@ export default function CheckoutPage() {
                             />
                           </div>
                           <div className="flex-1">
-                            <p className="font-medium line-clamp-1">{item.product.name}</p>
-                            <p className="text-sm text-muted-foreground">Qty: {item.quantity}</p>
+                            <p className="line-clamp-1 font-medium">
+                              {item.product.name}
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              Qty: {item.quantity}
+                            </p>
                           </div>
-                          <p className="font-medium">{formatPrice(item.product.price * item.quantity)}</p>
+                          <p className="font-medium">
+                            {formatPrice(item.product.price * item.quantity)}
+                          </p>
                         </div>
                       ))}
                     </div>
                   </div>
 
                   <div className="flex gap-3">
-                    <Button variant="outline" onClick={() => setCurrentStep("payment")}>
+                    <Button
+                      variant="outline"
+                      onClick={() => setCurrentStep("payment")}
+                    >
                       Back
                     </Button>
                     <Button onClick={handlePlaceOrder} disabled={isProcessing}>
-                      {isProcessing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      {isProcessing && (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      )}
                       Place Order - {formatPrice(total)}
                     </Button>
                   </div>
@@ -399,12 +488,14 @@ export default function CheckoutPage() {
 
             {/* Order Summary Sidebar */}
             <div className="lg:col-span-1">
-              <div className="rounded-xl border border-border bg-card p-6 sticky top-20">
-                <h2 className="text-lg font-semibold mb-4">Order Summary</h2>
+              <div className="sticky top-20 rounded-xl border border-border bg-card p-6">
+                <h2 className="mb-4 text-lg font-semibold">Order Summary</h2>
 
                 <div className="space-y-3 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Subtotal ({items.length} items)</span>
+                    <span className="text-muted-foreground">
+                      Subtotal ({items.length} items)
+                    </span>
                     <span>{formatPrice(subtotal)}</span>
                   </div>
                   <div className="flex justify-between">
@@ -423,7 +514,7 @@ export default function CheckoutPage() {
                   </div>
                 </div>
 
-                <div className="border-t my-4" />
+                <div className="my-4 border-t" />
 
                 <div className="flex justify-between text-lg font-semibold">
                   <span>Total</span>
@@ -432,7 +523,10 @@ export default function CheckoutPage() {
 
                 <div className="mt-6 space-y-2">
                   {items.slice(0, 3).map((item) => (
-                    <div key={item.product.id} className="flex gap-2 items-center text-sm">
+                    <div
+                      key={item.product.id}
+                      className="flex items-center gap-2 text-sm"
+                    >
                       <div className="h-10 w-10 shrink-0 overflow-hidden rounded bg-muted">
                         <img
                           src={item.product.image || "/placeholder.svg"}
@@ -440,11 +534,17 @@ export default function CheckoutPage() {
                           className="h-full w-full object-cover"
                         />
                       </div>
-                      <span className="text-muted-foreground line-clamp-1 flex-1">{item.product.name}</span>
+                      <span className="flex-1 line-clamp-1 text-muted-foreground">
+                        {item.product.name}
+                      </span>
                       <span>×{item.quantity}</span>
                     </div>
                   ))}
-                  {items.length > 3 && <p className="text-sm text-muted-foreground">+{items.length - 3} more items</p>}
+                  {items.length > 3 && (
+                    <p className="text-sm text-muted-foreground">
+                      +{items.length - 3} more items
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
