@@ -34,6 +34,7 @@ const adminNavItems = [
   { href: "/dashboard/admin/products", label: "Products", icon: Package },
   { href: "/dashboard/admin/orders", label: "Orders", icon: ShoppingCart },
   { href: "/dashboard/admin/verifications", label: "Verifications", icon: ShieldCheck },
+  { href: "/dashboard/admin/reports", label: "Reports", icon: BarChart3 },
 ]
 
 const products = [
