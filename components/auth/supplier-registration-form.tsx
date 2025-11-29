@@ -12,102 +12,162 @@ import { Textarea } from "@/components/ui/textarea"
 import { Eye, EyeOff, Loader2 } from "lucide-react"
 import { signUp } from "@/lib/actions/auth"
 import { useToast } from "@/hooks/use-toast"
+import { useForm, Controller } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { supplierRegistrationSchema } from "@/lib/validation/auth"
+import { z } from "zod"
+
+type SupplierRegistrationFormInputs = z.infer<typeof supplierRegistrationSchema>
 
 export function SupplierRegistrationForm() {
   const router = useRouter()
   const { toast } = useToast()
   const [showPassword, setShowPassword] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    setIsLoading(true)
+  const {
+    register,
+    handleSubmit,
+    control,
+    formState: { errors, isSubmitting },
+    setError,
+    reset,
+  } = useForm<SupplierRegistrationFormInputs>({
+    resolver: zodResolver(supplierRegistrationSchema),
+    defaultValues: {
+      businessName: "",
+      contactPerson: "",
+      position: "",
+      businessEmail: "",
+      businessPhone: "",
+      kraPin: "",
+      location: "",
+      businessAddress: "",
+      password: "",
+      confirmPassword: "",
+      terms: false,
+    },
+  })
 
-    const formData = new FormData(e.currentTarget)
-    formData.append("role", "supplier")
-    formData.append("fullName", formData.get("contact-name") as string)
-    formData.append("businessName", formData.get("business-name") as string)
-    formData.append("contactPerson", formData.get("contact-name") as string)
-    formData.append("position", formData.get("position") as string)
-    formData.append("businessEmail", formData.get("business-email") as string)
-    formData.append("businessPhone", formData.get("business-phone") as string)
-    formData.append("kraPin", formData.get("kra-pin") as string)
-    formData.append("location", formData.get("location") as string)
-    formData.append("businessAddress", formData.get("business-address") as string)
+  const onSubmit = async (data: SupplierRegistrationFormInputs) => {
+    try {
+      const formData = new FormData()
+      formData.append("role", "supplier")
+      formData.append("fullName", data.contactPerson)
+      formData.append("businessName", data.businessName)
+      formData.append("contactPerson", data.contactPerson)
+      formData.append("position", data.position)
+      formData.append("email", data.businessEmail) // This is the email
+      formData.append("businessEmail", data.businessEmail)
+      formData.append("businessPhone", data.businessPhone)
+      formData.append("kraPin", data.kraPin)
+      formData.append("location", data.location)
+      formData.append("businessAddress", data.businessAddress)
+      formData.append("password", data.password)
+      formData.append("confirmPassword", data.confirmPassword) // For consistency, though server might not need it
 
-    const result = await signUp(formData)
+      const result = await signUp(formData)
 
-    if (result?.error) {
+      if (result?.error) {
+        toast({
+          title: "Registration failed",
+          description: result.error,
+          variant: "destructive",
+        })
+        console.error("Supplier registration error:", result.error)
+        setError("businessEmail", { type: "manual", message: result.error }) // Example: set error on email field if server returns general error
+      } else {
+        toast({
+          title: "Registration successful!",
+          description: "Your supplier account has been created.",
+        })
+        reset()
+        // If successful, redirection happens in the server action, or we can explicitly redirect here
+        // router.push("/dashboard/supplier");
+      }
+    } catch (error) {
+      console.error("An unexpected error occurred during supplier registration:", error)
       toast({
         title: "Registration failed",
-        description: result.error,
+        description: "An unexpected error occurred. Please try again.",
         variant: "destructive",
       })
-      setIsLoading(false)
     }
-    // If successful, redirect happens in the server action
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="business-name">Business Name</Label>
-        <Input id="business-name" name="business-name" placeholder="MedSupply Kenya Ltd" required />
+        <Label htmlFor="businessName">Business Name</Label>
+        <Input id="businessName" placeholder="MedSupply Kenya Ltd" {...register("businessName")} />
+        {errors.businessName && <p className="text-sm text-red-500">{errors.businessName.message}</p>}
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
-          <Label htmlFor="contact-name">Contact Person</Label>
-          <Input id="contact-name" name="contact-name" placeholder="Jane Muthoni" required />
+          <Label htmlFor="contactPerson">Contact Person</Label>
+          <Input id="contactPerson" placeholder="Jane Muthoni" {...register("contactPerson")} />
+          {errors.contactPerson && <p className="text-sm text-red-500">{errors.contactPerson.message}</p>}
         </div>
         <div className="space-y-2">
           <Label htmlFor="position">Position</Label>
-          <Input id="position" name="position" placeholder="Managing Director" required />
+          <Input id="position" placeholder="Managing Director" {...register("position")} />
+          {errors.position && <p className="text-sm text-red-500">{errors.position.message}</p>}
         </div>
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="business-email">Business Email</Label>
-        <Input id="business-email" name="business-email" type="email" placeholder="contact@medsupply.co.ke" required />
+        <Label htmlFor="businessEmail">Business Email</Label>
+        <Input id="businessEmail" type="email" placeholder="contact@medsupply.co.ke" {...register("businessEmail")} />
+        {errors.businessEmail && <p className="text-sm text-red-500">{errors.businessEmail.message}</p>}
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="business-phone">Business Phone</Label>
-        <Input id="business-phone" name="business-phone" type="tel" placeholder="+254 700 000 000" required />
+        <Label htmlFor="businessPhone">Business Phone</Label>
+        <Input id="businessPhone" type="tel" placeholder="+254 700 000 000" {...register("businessPhone")} />
+        {errors.businessPhone && <p className="text-sm text-red-500">{errors.businessPhone.message}</p>}
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="kra-pin">KRA PIN</Label>
-        <Input id="kra-pin" name="kra-pin" placeholder="A000000000A" required />
+        <Label htmlFor="kraPin">KRA PIN</Label>
+        <Input id="kraPin" placeholder="A000000000A" {...register("kraPin")} />
         <p className="text-xs text-muted-foreground">Required for verification. We verify all suppliers.</p>
+        {errors.kraPin && <p className="text-sm text-red-500">{errors.kraPin.message}</p>}
       </div>
 
       <div className="space-y-2">
         <Label htmlFor="location">Location</Label>
-        <Select name="location">
-          <SelectTrigger>
-            <SelectValue placeholder="Select county" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="nairobi">Nairobi</SelectItem>
-            <SelectItem value="mombasa">Mombasa</SelectItem>
-            <SelectItem value="kisumu">Kisumu</SelectItem>
-            <SelectItem value="nakuru">Nakuru</SelectItem>
-            <SelectItem value="eldoret">Eldoret</SelectItem>
-            <SelectItem value="other">Other</SelectItem>
-          </SelectContent>
-        </Select>
+        <Controller
+          control={control}
+          name="location"
+          render={({ field }) => (
+            <Select onValueChange={field.onChange} value={field.value}>
+              <SelectTrigger id="location">
+                <SelectValue placeholder="Select county" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="nairobi">Nairobi</SelectItem>
+                <SelectItem value="mombasa">Mombasa</SelectItem>
+                <SelectItem value="kisumu">Kisumu</SelectItem>
+                <SelectItem value="nakuru">Nakuru</SelectItem>
+                <SelectItem value="eldoret">Eldoret</SelectItem>
+                <SelectItem value="other">Other</SelectItem>
+              </SelectContent>
+            </Select>
+          )}
+        />
+        {errors.location && <p className="text-sm text-red-500">{errors.location.message}</p>}
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="business-address">Business Address</Label>
-        <Textarea id="business-address" name="business-address" placeholder="Industrial Area, Nairobi" rows={2} required />
+        <Label htmlFor="businessAddress">Business Address</Label>
+        <Textarea id="businessAddress" placeholder="Industrial Area, Nairobi" rows={2} {...register("businessAddress")} />
+        {errors.businessAddress && <p className="text-sm text-red-500">{errors.businessAddress.message}</p>}
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="supplier-password">Password</Label>
+        <Label htmlFor="password">Password</Label>
         <div className="relative">
-          <Input id="supplier-password" name="password" type={showPassword ? "text" : "password"} placeholder="••••••••" required minLength={8} />
+          <Input id="password" type={showPassword ? "text" : "password"} placeholder="••••••••" {...register("password")} />
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
@@ -116,16 +176,21 @@ export function SupplierRegistrationForm() {
             {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
           </button>
         </div>
+        <p className="text-xs text-muted-foreground">
+          Must be at least 8 characters with a number and special character
+        </p>
+        {errors.password && <p className="text-sm text-red-500">{errors.password.message}</p>}
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="supplier-confirm-password">Confirm Password</Label>
-        <Input id="supplier-confirm-password" name="confirm-password" type="password" placeholder="••••••••" required />
+        <Label htmlFor="confirmPassword">Confirm Password</Label>
+        <Input id="confirmPassword" type="password" placeholder="••••••••" {...register("confirmPassword")} />
+        {errors.confirmPassword && <p className="text-sm text-red-500">{errors.confirmPassword.message}</p>}
       </div>
 
       <div className="flex items-start gap-2 pt-2">
-        <input type="checkbox" id="supplier-terms" className="mt-1 rounded border-input" required />
-        <Label htmlFor="supplier-terms" className="text-sm font-normal leading-relaxed">
+        <input type="checkbox" id="terms" className="mt-1 rounded border-input" {...register("terms")} />
+        <Label htmlFor="terms" className="text-sm font-normal leading-relaxed">
           I agree to the{" "}
           <a href="/terms" className="text-primary hover:underline">
             Terms of Service
@@ -140,11 +205,13 @@ export function SupplierRegistrationForm() {
           </a>
         </Label>
       </div>
+      {errors.terms && <p className="text-sm text-red-500">{errors.terms.message}</p>}
 
-      <Button type="submit" className="w-full" disabled={isLoading}>
-        {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+      <Button type="submit" className="w-full" disabled={isSubmitting}>
+        {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
         Create Supplier Account
       </Button>
     </form>
   )
 }
+

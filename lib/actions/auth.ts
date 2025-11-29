@@ -11,7 +11,7 @@ export async function signUp(formData: FormData) {
   const password = formData.get("password") as string
   const role = formData.get("role") as string
   const fullName = formData.get("fullName") as string
-  const phone = formData.get("phone") as string
+  const businessPhone = formData.get("businessPhone") as string
   const organizationName = formData.get("organizationName") as string
   const organizationType = formData.get("organizationType") as string
 
@@ -32,15 +32,20 @@ export async function signUp(formData: FormData) {
 
   if (data.user) {
     // Update profile with additional info
+    let profileUpdateData: Record<string, any> = {
+      full_name: fullName,
+      phone: businessPhone,
+      role: role,
+    };
+
+    if (role !== "supplier") { // Only include these if not a supplier
+        profileUpdateData.organization_name = organizationName;
+        profileUpdateData.organization_type = organizationType;
+    }
+
     const { error: profileError } = await supabase
       .from("profiles")
-      .update({
-        full_name: fullName,
-        phone,
-        role,
-        organization_name: organizationName,
-        organization_type: organizationType,
-      })
+      .update(profileUpdateData)
       .eq("id", data.user.id)
 
     if (profileError) {
