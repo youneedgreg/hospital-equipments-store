@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { DashboardSidebar } from "@/components/dashboard/dashboard-sidebar"
@@ -13,8 +13,9 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ChevronLeft, Upload, Loader2, X } from "lucide-react"
+import { Skeleton } from "@/components/ui/skeleton"
 
-const categories = [
+const categoriesData = [
   "Hospital Beds",
   "PPE & Safety",
   "Diagnostic Tools",
@@ -26,6 +27,11 @@ const categories = [
 ]
 
 export default function NewProductPage() {
+    const [isClient, setIsClient] = useState(false)
+    useEffect(() => {
+        setIsClient(true)
+    }, [])
+
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [images, setImages] = useState<string[]>([])
@@ -46,6 +52,30 @@ export default function NewProductPage() {
 
   const removeImage = (index: number) => {
     setImages(images.filter((_, i) => i !== index))
+  }
+
+  if (!isClient) {
+    return (
+        <div className="flex min-h-screen">
+            <DashboardSidebar type="supplier" />
+            <div className="flex-1 lg:pl-64">
+                <DashboardHeader type="supplier" userName="MedSupply Kenya" />
+                <main className="p-4 lg:p-6">
+                    <Skeleton className="h-6 w-32 mb-6" />
+                    <div className="mb-6">
+                        <Skeleton className="h-8 w-1/3 mb-1" />
+                        <Skeleton className="h-4 w-1/2" />
+                    </div>
+                    <div className="max-w-3xl space-y-6">
+                        <Skeleton className="h-64 w-full" />
+                        <Skeleton className="h-40 w-full" />
+                        <Skeleton className="h-40 w-full" />
+                        <Skeleton className="h-20 w-full" />
+                    </div>
+                </main>
+            </div>
+        </div>
+    )
   }
 
   return (
@@ -85,7 +115,7 @@ export default function NewProductPage() {
                         <SelectValue placeholder="Select category" />
                       </SelectTrigger>
                       <SelectContent>
-                        {categories.map((category) => (
+                        {categoriesData.map((category) => (
                           <SelectItem key={category} value={category.toLowerCase().replace(/ /g, "-")}>
                             {category}
                           </SelectItem>

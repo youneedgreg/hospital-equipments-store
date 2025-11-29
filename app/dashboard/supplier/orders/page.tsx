@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { DashboardSidebar } from "@/components/dashboard/dashboard-sidebar"
 import { DashboardHeader } from "@/components/dashboard/dashboard-header"
 import { OrderStatusBadge } from "@/components/dashboard/order-status-badge"
@@ -9,8 +9,9 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { formatPrice } from "@/lib/data"
 import { Search, Check, Truck, Package } from "lucide-react"
+import { Skeleton } from "@/components/ui/skeleton"
 
-const supplierOrders = [
+const ordersData = [
   {
     id: "BIO-12345678",
     buyer: "Nairobi Regional Hospital",
@@ -64,11 +65,19 @@ const supplierOrders = [
 ]
 
 export default function SupplierOrdersPage() {
+    const [isClient, setIsClient] = useState(false)
+    useEffect(() => {
+        setIsClient(true)
+    }, [])
+
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
-  const [selectedOrder, setSelectedOrder] = useState<string | null>(supplierOrders[0]?.id || null)
+  const [selectedOrder, setSelectedOrder] = useState<string | null>(ordersData[0]?.id || null)
 
-  const filteredOrders = supplierOrders.filter((order) => {
+  const filteredOrders = ordersData.filter((order) => {
+    if (!order || !order.id || !order.buyer) {
+        return false;
+    }
     const matchesSearch =
       order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
       order.buyer.toLowerCase().includes(searchQuery.toLowerCase())
@@ -76,7 +85,34 @@ export default function SupplierOrdersPage() {
     return matchesSearch && matchesStatus
   })
 
-  const orderDetails = selectedOrder ? supplierOrders.find((o) => o.id === selectedOrder) : null
+  const orderDetails = selectedOrder ? ordersData.find((o) => o.id === selectedOrder) : null
+
+  if (!isClient) {
+    return (
+        <div className="flex min-h-screen">
+            <DashboardSidebar type="supplier" />
+            <div className="flex-1 lg:pl-64">
+                <DashboardHeader type="supplier" userName="MedSupply Kenya" />
+                <main className="p-4 lg:p-6">
+                    <Skeleton className="h-8 w-1/4 mb-1" />
+                    <Skeleton className="h-4 w-1/2 mb-6" />
+                    <div className="flex flex-col sm:flex-row gap-4 mb-6">
+                        <Skeleton className="h-10 w-full max-w-sm" />
+                        <Skeleton className="h-10 w-44" />
+                    </div>
+                    <div className="grid gap-6 lg:grid-cols-3">
+                        <div className="lg:col-span-2">
+                            <Skeleton className="h-96" />
+                        </div>
+                        <div className="lg:col-span-1">
+                            <Skeleton className="h-96" />
+                        </div>
+                    </div>
+                </main>
+            </div>
+        </div>
+    )
+  }
 
   return (
     <div className="flex min-h-screen">
