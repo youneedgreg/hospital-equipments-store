@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { changePassword } from "@/lib/actions/auth"
 import { DashboardSidebar } from "@/components/dashboard/dashboard-sidebar"
 import { DashboardHeader } from "@/components/dashboard/dashboard-header"
 import { Button } from "@/components/ui/button"
@@ -58,6 +59,9 @@ export default function BuyerProfilePage() {
   const [orgType, setOrgType] = useState("hospital")
   const [city, setCity] = useState("Nairobi")
   const [county, setCounty] = useState("Nairobi")
+  const [currentPassword, setCurrentPassword] = useState("")
+  const [newPassword, setNewPassword] = useState("")
+  const [confirmPassword, setConfirmPassword] = useState("")
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -142,6 +146,44 @@ export default function BuyerProfilePage() {
       toast({
         title: "Error",
         description: err.message,
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleChangePassword = async () => {
+    if (newPassword !== confirmPassword) {
+      toast({
+        title: "Error",
+        description: "New passwords do not match.",
+        variant: "destructive",
+      })
+      return
+    }
+    setIsLoading(true)
+    try {
+      const result = await changePassword(currentPassword, newPassword)
+      if (result?.error) {
+        toast({
+          title: "Error",
+          description: result.error,
+          variant: "destructive",
+        })
+      } else {
+        toast({
+          title: "Success",
+          description: "Password updated successfully!",
+        })
+        setCurrentPassword("")
+        setNewPassword("")
+        setConfirmPassword("")
+      }
+    } catch (err: any) {
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred.",
         variant: "destructive",
       })
     } finally {
@@ -309,20 +351,35 @@ export default function BuyerProfilePage() {
                     <div className="grid gap-4 max-w-md">
                       <div className="space-y-2">
                         <Label htmlFor="currentPassword">Current Password</Label>
-                        <Input id="currentPassword" type="password" />
+                        <Input
+                          id="currentPassword"
+                          type="password"
+                          value={currentPassword}
+                          onChange={(e) => setCurrentPassword(e.target.value)}
+                        />
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="newPassword">New Password</Label>
-                        <Input id="newPassword" type="password" />
+                        <Input
+                          id="newPassword"
+                          type="password"
+                          value={newPassword}
+                          onChange={(e) => setNewPassword(e.target.value)}
+                        />
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="confirmPassword">Confirm New Password</Label>
-                        <Input id="confirmPassword" type="password" />
+                        <Input
+                          id="confirmPassword"
+                          type="password"
+                          value={confirmPassword}
+                          onChange={(e) => setConfirmPassword(e.target.value)}
+                        />
                       </div>
                     </div>
                   </div>
 
-                  <Button onClick={handleSave} disabled={isLoading}>
+                  <Button onClick={handleChangePassword} disabled={isLoading}>
                     {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     Update Password
                   </Button>
