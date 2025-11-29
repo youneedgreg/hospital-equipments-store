@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { DashboardSidebar } from "@/components/dashboard/dashboard-sidebar"
 import { DashboardHeader } from "@/components/dashboard/dashboard-header"
 import { OrderStatusBadge } from "@/components/dashboard/order-status-badge"
@@ -9,72 +9,113 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { formatPrice } from "@/lib/data"
 import { Search, Eye } from "lucide-react"
+import { Spinner } from "@/components/ui/spinner"
+import { useToast } from "@/components/ui/use-toast"
 
-const orders = [
-  {
-    id: "BIO-12345678",
-    date: "Nov 20, 2025",
-    items: [
-      { name: "Electric Hospital Bed - ICU Grade", quantity: 1, price: 285000 },
-      { name: "Patient Monitor - 6 Parameter", quantity: 1, price: 165000 },
-      { name: "Wheelchair - Foldable Standard", quantity: 2, price: 56000 },
-    ],
-    total: 506000,
-    paymentStatus: "paid" as const,
-    orderStatus: "shipped" as const,
-    supplier: "MedSupply Kenya Ltd",
-  },
-  {
-    id: "BIO-12345677",
-    date: "Nov 18, 2025",
-    items: [{ name: "N95 Respirator Masks - Box of 50", quantity: 10, price: 45000 }],
-    total: 45000,
-    paymentStatus: "paid" as const,
-    orderStatus: "delivered" as const,
-    supplier: "HealthTech Africa",
-  },
-  {
-    id: "BIO-12345676",
-    date: "Nov 15, 2025",
-    items: [{ name: "Electric Hospital Bed - ICU Grade", quantity: 1, price: 285000 }],
-    total: 285000,
-    paymentStatus: "pending" as const,
-    orderStatus: "pending" as const,
-    supplier: "MedSupply Kenya Ltd",
-  },
-  {
-    id: "BIO-12345675",
-    date: "Nov 10, 2025",
-    items: [
-      { name: "Disposable Syringes 5ml - Box of 100", quantity: 20, price: 24000 },
-      { name: "Examination Gloves - Nitrile Box 100", quantity: 5, price: 8000 },
-    ],
-    total: 32000,
-    paymentStatus: "paid" as const,
-    orderStatus: "delivered" as const,
-    supplier: "HealthTech Africa",
-  },
-  {
-    id: "BIO-12345674",
-    date: "Nov 5, 2025",
-    items: [{ name: "Digital Stethoscope - Bluetooth", quantity: 5, price: 92500 }],
-    total: 92500,
-    paymentStatus: "paid" as const,
-    orderStatus: "delivered" as const,
-    supplier: "Kenyan Medical Supplies",
-  },
-]
+interface OrderItem {
+  id: string
+  quantity: number
+  products: {
+    id: string
+    name: string
+    price: number
+    image_url: string | null
+  }
+}
+
+interface Order {
+  id: string
+  created_at: string
+  status: "pending" | "processing" | "shipped" | "delivered" | "cancelled"
+  total_amount: number
+  order_items: OrderItem[]
+}
+
+interface UserProfile {
+  id: string
+  full_name: string | null
+  email: string | null
+  role: string | null
+  phone_number: string | null
+  address: string | null
+}
+
+interface UserData {
+  user: {
+    id: string
+    email: string | null
+    profile: UserProfile
+  }
+  orders: Order[]
+}
 
 export default function BuyerOrdersPage() {
+  const [userData, setUserData] = useState<UserData | null>(null)
+  const [loadingPage, setLoadingPage] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
   const [selectedOrder, setSelectedOrder] = useState<string | null>(null)
+  const { toast } = useToast()
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const response = await fetch("/api/user")
+        if (!response.ok) {
+          const errorData = await response.json()
+          throw new Error(errorData.error || "Failed to fetch user data")
+        }
+        const data: UserData = await response.json()
+        setUserData(data)
+      } catch (err: any) {
+        setError(err.message)
+        toast({
+          title: "Error",
+          description: err.message,
+          variant: "destructive",
+        })
+      } finally {
+        setLoadingPage(false)
+      }
+    }
+
+    fetchUserData()
+  }, [toast])
+
+  if (loadingPage) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <Spinner size="lg" />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex min-h-screen items-center justify-center text-red-500">
+        <p>Error: {error}</p>
+      </div>
+    )
+  }
+
+  const { user, orders } = userData || { user: null, orders: [] }
+
+  if (!user || !user.profile) {
+    return (
+      <div className="flex min-h-screen items-center justify-center text-red-500">
+        <p>User data not found. Please log in again.</p>
+      </div>
+    )
+  }
 
   const filteredOrders = orders.filter((order) => {
     const matchesSearch =
       order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      order.items.some((item) => item.name.toLowerCase().includes(searchQuery.toLowerCase()))
-    const matchesStatus = statusFilter === "all" || order.orderStatus === statusFilter
+      order.order_items.some((item) =>
+        item.products.name.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    const matchesStatus = statusFilter === "all" || order.status === statusFilter
     return matchesSearch && matchesStatus
   })
 
@@ -84,7 +125,7 @@ export default function BuyerOrdersPage() {
     <div className="flex min-h-screen">
       <DashboardSidebar type="buyer" navItems={[]} />
       <div className="flex-1 lg:pl-64">
-        <DashboardHeader type="buyer" userName="Dr. Sarah Wanjiku" />
+        <DashboardHeader type="buyer" userName={user.profile.full_name || "Buyer"} />
 
         <main className="p-4 lg:p-6">
           <div className="mb-6">
@@ -110,10 +151,10 @@ export default function BuyerOrdersPage() {
               <SelectContent>
                 <SelectItem value="all">All Status</SelectItem>
                 <SelectItem value="pending">Pending</SelectItem>
-                <SelectItem value="confirmed">Confirmed</SelectItem>
                 <SelectItem value="processing">Processing</SelectItem>
                 <SelectItem value="shipped">Shipped</SelectItem>
                 <SelectItem value="delivered">Delivered</SelectItem>
+                <SelectItem value="cancelled">Cancelled</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -129,45 +170,45 @@ export default function BuyerOrdersPage() {
                         <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">Order ID</th>
                         <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">Date</th>
                         <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">Total</th>
-                        <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">Payment</th>
                         <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">Status</th>
                         <th className="px-4 py-3 text-right text-sm font-medium text-muted-foreground">Action</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {filteredOrders.map((order) => (
-                        <tr
-                          key={order.id}
-                          className={`border-b last:border-0 cursor-pointer transition-colors ${selectedOrder === order.id ? "bg-muted/50" : "hover:bg-muted/30"}`}
-                          onClick={() => setSelectedOrder(order.id)}
-                        >
-                          <td className="px-4 py-3">
-                            <span className="font-medium">{order.id}</span>
-                          </td>
-                          <td className="px-4 py-3 text-sm text-muted-foreground">{order.date}</td>
-                          <td className="px-4 py-3 font-medium">{formatPrice(order.total)}</td>
-                          <td className="px-4 py-3">
-                            <OrderStatusBadge status={order.paymentStatus} type="payment" />
-                          </td>
-                          <td className="px-4 py-3">
-                            <OrderStatusBadge status={order.orderStatus} type="order" />
-                          </td>
-                          <td className="px-4 py-3 text-right">
-                            <Button variant="ghost" size="sm">
-                              <Eye className="h-4 w-4" />
-                            </Button>
+                      {filteredOrders.length === 0 ? (
+                        <tr>
+                          <td colSpan={6} className="py-8 text-center text-muted-foreground">
+                            No orders found.
                           </td>
                         </tr>
-                      ))}
+                      ) : (
+                        filteredOrders.map((order) => (
+                          <tr
+                            key={order.id}
+                            className={`border-b last:border-0 cursor-pointer transition-colors ${selectedOrder === order.id ? "bg-muted/50" : "hover:bg-muted/30"}`}
+                            onClick={() => setSelectedOrder(order.id)}
+                          >
+                            <td className="px-4 py-3">
+                              <span className="font-medium">{order.id}</span>
+                            </td>
+                            <td className="px-4 py-3 text-sm text-muted-foreground">
+                              {new Date(order.created_at).toLocaleDateString()}
+                            </td>
+                            <td className="px-4 py-3 font-medium">{formatPrice(order.total_amount)}</td>
+                            <td className="px-4 py-3">
+                              <OrderStatusBadge status={order.status} type="order" />
+                            </td>
+                            <td className="px-4 py-3 text-right">
+                              <Button variant="ghost" size="sm">
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                            </td>
+                          </tr>
+                        ))
+                      )}
                     </tbody>
                   </table>
                 </div>
-
-                {filteredOrders.length === 0 && (
-                  <div className="p-8 text-center">
-                    <p className="text-muted-foreground">No orders found</p>
-                  </div>
-                )}
               </div>
             </div>
 
@@ -184,29 +225,29 @@ export default function BuyerOrdersPage() {
                     </div>
                     <div>
                       <p className="text-sm text-muted-foreground">Date</p>
-                      <p className="font-medium">{orderDetails.date}</p>
+                      <p className="font-medium">{new Date(orderDetails.created_at).toLocaleDateString()}</p>
                     </div>
-                    <div>
+                    {/* Assuming supplier info is not directly in order for now */}
+                    {/* <div>
                       <p className="text-sm text-muted-foreground">Supplier</p>
                       <p className="font-medium">{orderDetails.supplier}</p>
-                    </div>
+                    </div> */}
                     <div>
                       <p className="text-sm text-muted-foreground">Status</p>
                       <div className="flex gap-2 mt-1">
-                        <OrderStatusBadge status={orderDetails.paymentStatus} type="payment" />
-                        <OrderStatusBadge status={orderDetails.orderStatus} type="order" />
+                        <OrderStatusBadge status={orderDetails.status} type="order" />
                       </div>
                     </div>
 
                     <div className="border-t pt-4">
                       <p className="text-sm font-medium mb-2">Items</p>
                       <div className="space-y-2">
-                        {orderDetails.items.map((item, index) => (
-                          <div key={index} className="flex justify-between text-sm">
+                        {orderDetails.order_items.map((item) => (
+                          <div key={item.id} className="flex justify-between text-sm">
                             <span className="text-muted-foreground">
-                              {item.name} × {item.quantity}
+                              {item.products.name} × {item.quantity}
                             </span>
-                            <span>{formatPrice(item.price)}</span>
+                            <span>{formatPrice(item.products.price * item.quantity)}</span>
                           </div>
                         ))}
                       </div>
@@ -214,7 +255,7 @@ export default function BuyerOrdersPage() {
 
                     <div className="border-t pt-4 flex justify-between">
                       <span className="font-semibold">Total</span>
-                      <span className="font-semibold">{formatPrice(orderDetails.total)}</span>
+                      <span className="font-semibold">{formatPrice(orderDetails.total_amount)}</span>
                     </div>
                   </div>
 
