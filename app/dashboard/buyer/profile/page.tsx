@@ -18,8 +18,10 @@ interface UserProfile {
   full_name: string | null
   email: string | null
   role: string | null
-  phone_number: string | null
-  address: string | null
+  phone: string | null
+  address?: string | null
+  organization_name?: string | null
+  organization_type?: string | null
 }
 
 interface UserData {
@@ -28,6 +30,7 @@ interface UserData {
     email: string | null
     profile: UserProfile
   }
+  orders?: any[]
 }
 
 const buyerNavItems = [
@@ -44,6 +47,18 @@ export default function BuyerProfilePage() {
   const [error, setError] = useState<string | null>(null)
   const { toast } = useToast()
 
+  // controlled form state
+  const [firstName, setFirstName] = useState("")
+  const [lastName, setLastName] = useState("")
+  const [phone, setPhone] = useState("")
+  const [address, setAddress] = useState("")
+  const [role, setRole] = useState("")
+  const [department, setDepartment] = useState("Administration")
+  const [orgName, setOrgName] = useState("")
+  const [orgType, setOrgType] = useState("hospital")
+  const [city, setCity] = useState("Nairobi")
+  const [county, setCounty] = useState("Nairobi")
+
   useEffect(() => {
     const fetchUserData = async () => {
       try {
@@ -54,6 +69,21 @@ export default function BuyerProfilePage() {
         }
         const data: UserData = await response.json()
         setUserData(data)
+
+        // map DB fields -> form fields (guard null => "")
+        const profile = data.user.profile || ({} as UserProfile)
+        const fullName = profile.full_name || ""
+        const names = fullName.trim().split(" ")
+        setFirstName(names[0] || "")
+        setLastName(names.slice(1).join(" ") || "")
+        setPhone(profile.phone || "")
+        setAddress((profile as any).address || "")
+        setRole(profile.role || "")
+        setOrgName((profile as any).organization_name || "")
+        setOrgType((profile as any).organization_type || "hospital")
+        // keep city/county defaults if not present
+        setCity((profile as any).city || "Nairobi")
+        setCounty((profile as any).county || "Nairobi")
       } catch (err: any) {
         setError(err.message)
         toast({
@@ -71,19 +101,58 @@ export default function BuyerProfilePage() {
 
   const handleSave = async () => {
     setIsLoading(true)
-    // Here you would typically send updated profile data to an API
-    await new Promise((resolve) => setTimeout(resolve, 1000))
-    setIsLoading(false)
-    toast({
-      title: "Success",
-      description: "Profile updated successfully!",
-    })
+    try {
+      const payload = {
+        full_name: `${firstName} ${lastName}`.trim(),
+        phone: phone || null,
+        address: address || null,
+        organization_name: orgName || null,
+        organization_type: orgType || null,
+        city: city || null,
+        county: county || null,
+        department: department || null,
+      }
+
+      const res = await fetch("/api/user", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      })
+
+      if (!res.ok) {
+        const err = await res.json()
+        throw new Error(err.error || "Failed to update profile")
+      }
+
+      const updated = await res.json()
+      toast({
+        title: "Success",
+        description: "Profile updated successfully!",
+      })
+
+      // Update local state userData.profile to reflect changes
+      setUserData((prev) => {
+        if (!prev) return prev
+        return {
+          ...prev,
+          user: { ...prev.user, profile: { ...prev.user.profile, ...updated.profile } },
+        }
+      })
+    } catch (err: any) {
+      toast({
+        title: "Error",
+        description: err.message,
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   if (loadingPage) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <Spinner size="lg" />
+        <Spinner width="lg" height="lg" />
       </div>
     )
   }
@@ -107,8 +176,12 @@ export default function BuyerProfilePage() {
   }
 
   const fullName = user.profile.full_name || ""
-  const firstName = fullName.split(" ")[0] || ""
-  const lastName = fullName.split(" ").slice(1).join(" ") || ""
+  const initials =
+    fullName
+      .split(" ")
+      .map((s) => (s ? s.charAt(0).toUpperCase() : ""))
+      .slice(0, 2)
+      .join("") || "B"
 
   return (
     <div className="flex min-h-screen">
@@ -137,7 +210,7 @@ export default function BuyerProfilePage() {
                 <div className="space-y-6">
                   <div className="flex items-center gap-6">
                     <div className="h-20 w-20 rounded-full bg-primary/10 flex items-center justify-center text-2xl font-bold text-primary">
-                      {fullName.charAt(0).toUpperCase() + (lastName ? lastName.charAt(0).toUpperCase() : "")}
+                      {initials}
                     </div>
                     <Button variant="outline">Change Photo</Button>
                   </div>
@@ -145,28 +218,27 @@ export default function BuyerProfilePage() {
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div className="space-y-2">
                       <Label htmlFor="firstName">First Name</Label>
-                      <Input id="firstName" defaultValue={firstName} />
+                      <Input id="firstName" value={firstName} onChange={(e) => setFirstName(e.target.value)} />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="lastName">Last Name</Label>
-                      <Input id="lastName" defaultValue={lastName} />
+                      <Input id="lastName" value={lastName} onChange={(e) => setLastName(e.target.value)} />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="email">Email Address</Label>
-                      <Input id="email" type="email" defaultValue={user.profile.email || ""} readOnly />
+                      <Input id="email" type="email" value={user.profile.email || ""} readOnly />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="phone">Phone Number</Label>
-                      <Input id="phone" defaultValue={user.profile.phone_number || ""} />
+                      <Input id="phone" value={phone} onChange={(e) => setPhone(e.target.value)} />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="role">Role/Title</Label>
-                      <Input id="role" defaultValue={user.profile.role || ""} readOnly />
+                      <Input id="role" value={role || ""} readOnly />
                     </div>
-                    {/* Assuming department is not in profile for now */}
                     <div className="space-y-2">
                       <Label htmlFor="department">Department</Label>
-                      <Input id="department" defaultValue="Administration" />
+                      <Input id="department" value={department} onChange={(e) => setDepartment(e.target.value)} />
                     </div>
                   </div>
 
@@ -187,11 +259,11 @@ export default function BuyerProfilePage() {
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div className="space-y-2">
                       <Label htmlFor="orgName">Organization Name</Label>
-                      <Input id="orgName" defaultValue="Nairobi Regional Hospital" />
+                      <Input id="orgName" value={orgName} onChange={(e) => setOrgName(e.target.value)} />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="orgType">Organization Type</Label>
-                      <Select defaultValue="hospital">
+                      <Select value={orgType} onValueChange={(val) => setOrgType(val)}>
                         <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
@@ -206,15 +278,15 @@ export default function BuyerProfilePage() {
                     </div>
                     <div className="space-y-2 sm:col-span-2">
                       <Label htmlFor="address">Address</Label>
-                      <Textarea id="address" defaultValue={user.profile.address || ""} rows={2} />
+                      <Textarea id="address" value={address} onChange={(e) => setAddress(e.target.value)} rows={2} />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="city">City</Label>
-                      <Input id="city" defaultValue="Nairobi" />
+                      <Input id="city" value={city} onChange={(e) => setCity(e.target.value)} />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="county">County</Label>
-                      <Input id="county" defaultValue="Nairobi" />
+                      <Input id="county" value={county} onChange={(e) => setCounty(e.target.value)} />
                     </div>
                   </div>
 
@@ -263,31 +335,34 @@ export default function BuyerProfilePage() {
                 <h2 className="text-lg font-semibold mb-6">Notification Preferences</h2>
 
                 <div className="space-y-4">
-                  {[
-                    {
-                      id: "orderUpdates",
-                      label: "Order Updates",
-                      description: "Get notified about order status changes",
-                    },
-                    { id: "promotions", label: "Promotions", description: "Receive promotional offers and discounts" },
-                    {
-                      id: "newProducts",
-                      label: "New Products",
-                      description: "Be notified when new products are added",
-                    },
-                    { id: "newsletter", label: "Newsletter", description: "Weekly digest of medical equipment news" },
-                  ].map((item) => (
-                    <div key={item.id} className="flex items-start gap-4 p-4 rounded-lg border">
-                      <input type="checkbox" id={item.id} defaultChecked className="mt-1" />
-                      <div>
-                        <Label htmlFor={item.id} className="font-medium">
-                          {item.label}
-                        </Label>
-                        <p className="text-sm text-muted-foreground">{item.description}</p>
+                  {[ ...Array(4).keys() ].map((i) => {
+                    const items = [
+                      {
+                        id: "orderUpdates",
+                        label: "Order Updates",
+                        description: "Get notified about order status changes",
+                      },
+                      { id: "promotions", label: "Promotions", description: "Receive promotional offers and discounts" },
+                      {
+                        id: "newProducts",
+                        label: "New Products",
+                        description: "Be notified when new products are added",
+                      },
+                      { id: "newsletter", label: "Newsletter", description: "Weekly digest of medical equipment news" },
+                    ]
+                    const item = items[i]
+                    return (
+                      <div key={item.id} className="flex items-start gap-4 p-4 rounded-lg border">
+                        <input type="checkbox" id={item.id} defaultChecked className="mt-1" />
+                        <div>
+                          <Label htmlFor={item.id} className="font-medium">
+                            {item.label}
+                          </Label>
+                          <p className="text-sm text-muted-foreground">{item.description}</p>
+                        </div>
                       </div>
-                    </div>
-                  ))}
-
+                    )
+                  })}
                   <Button onClick={handleSave} disabled={isLoading}>
                     {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     <Save className="mr-2 h-4 w-4" />
