@@ -4,22 +4,36 @@ import type React from "react"
 
 import { useState } from "react"
 import Link from "next/link"
+import { resetPassword } from "@/lib/actions/auth"
 import { LogoIcon } from "@/components/icons"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { ArrowLeft, Loader2, Mail } from "lucide-react"
+import { toast } from "sonner"
 
 export default function ForgotPasswordPage() {
+  const [email, setEmail] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setIsLoading(true)
-    await new Promise((resolve) => setTimeout(resolve, 1500))
-    setIsLoading(false)
-    setIsSubmitted(true)
+    try {
+      const formData = new FormData()
+      formData.append("email", email)
+      const result = await resetPassword(formData)
+      if (result?.error) {
+        toast.error(result.error)
+      } else {
+        setIsSubmitted(true)
+      }
+    } catch (error) {
+      toast.error("An unexpected error occurred.")
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -33,14 +47,25 @@ export default function ForgotPasswordPage() {
         {!isSubmitted ? (
           <>
             <div className="text-center mb-8">
-              <h1 className="text-2xl font-bold tracking-tight">Forgot your password?</h1>
-              <p className="mt-2 text-muted-foreground">Enter your email and we'll send you a reset link</p>
+              <h1 className="text-2xl font-bold tracking-tight">
+                Forgot your password?
+              </h1>
+              <p className="mt-2 text-muted-foreground">
+                Enter your email and we'll send you a reset link
+              </p>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email">Email address</Label>
-                <Input id="email" type="email" placeholder="you@example.co.ke" required />
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="you@example.co.ke"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
               </div>
               <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -53,18 +78,28 @@ export default function ForgotPasswordPage() {
             <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-secondary/20">
               <Mail className="h-8 w-8 text-secondary" />
             </div>
-            <h1 className="text-2xl font-bold tracking-tight">Check your email</h1>
+            <h1 className="text-2xl font-bold tracking-tight">
+              Check your email
+            </h1>
             <p className="mt-2 text-muted-foreground">
-              We've sent a password reset link to your email address. The link will expire in 24 hours.
+              We've sent a password reset link to {email}. The link will expire
+              in 24 hours.
             </p>
-            <Button variant="outline" className="mt-6 bg-transparent" onClick={() => setIsSubmitted(false)}>
+            <Button
+              variant="outline"
+              className="mt-6 bg-transparent"
+              onClick={() => setIsSubmitted(false)}
+            >
               Try another email
             </Button>
           </div>
         )}
 
         <div className="mt-8 text-center">
-          <Link href="/login" className="inline-flex items-center gap-1 text-sm text-primary hover:underline">
+          <Link
+            href="/login"
+            className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
+          >
             <ArrowLeft className="h-4 w-4" />
             Back to login
           </Link>
