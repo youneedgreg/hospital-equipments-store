@@ -128,3 +128,43 @@ export function UsersIcon({ className }: { className?: string }) {
     </svg>
   )
 }
+
+export function ShoppingCartIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="9" cy="20" r="2" className="fill-primary stroke-primary" strokeWidth="2" />
+      <circle cx="17" cy="20" r="2" className="fill-primary stroke-primary" strokeWidth="2" />
+      <path d="M3 3h2l3 12h10l3-8H6" className="stroke-primary" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+export function ToolIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path
+        d="M14.7 6.3a4 4 0 1 0-5.6 5.6l8 8 4-4-8-8z"
+        className="stroke-secondary"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path d="M10 10l1.5-1.5" className="stroke-secondary" strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+export function UserCheckIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="12" cy="7" r="4" className="fill-primary/20 stroke-primary" strokeWidth="2" />
+      <path
+        d="M4 21v-2a6 6 0 0 1 12 0v2"
+        className="stroke-primary"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+      <path d="M16 11l2 2 4-4" className="stroke-primary" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
