@@ -90,7 +90,7 @@ export default function SupplierOrdersPage() {
   if (!isClient) {
     return (
         <div className="flex min-h-screen">
-            <DashboardSidebar type="supplier" />
+            <DashboardSidebar type="supplier" navItems={[]} />
             <div className="flex-1 lg:pl-64">
                 <DashboardHeader type="supplier" userName="MedSupply Kenya" />
                 <main className="p-4 lg:p-6">
@@ -116,7 +116,7 @@ export default function SupplierOrdersPage() {
 
   return (
     <div className="flex min-h-screen">
-      <DashboardSidebar type="supplier" />
+      <DashboardSidebar type="supplier" navItems={[]} />
       <div className="flex-1 lg:pl-64">
         <DashboardHeader type="supplier" userName="MedSupply Kenya" />
 

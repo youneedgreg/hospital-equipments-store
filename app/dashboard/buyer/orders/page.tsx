@@ -82,7 +82,7 @@ export default function BuyerOrdersPage() {
 
   return (
     <div className="flex min-h-screen">
-      <DashboardSidebar type="buyer" />
+      <DashboardSidebar type="buyer" navItems={[]} />
       <div className="flex-1 lg:pl-64">
         <DashboardHeader type="buyer" userName="Dr. Sarah Wanjiku" />
 

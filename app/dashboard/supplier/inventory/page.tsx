@@ -28,7 +28,7 @@ export default function SupplierInventoryPage() {
   const [filter, setFilter] = useState("all")
   const [editingItem, setEditingItem] = useState<(typeof inventoryItems)[0] | null>(null)
 
-  const filteredItems = inventoryItems.filter((item) => {
+  const filteredItems = (inventoryItems || []).filter((item) => {
     const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase())
     const matchesFilter = filter === "all" || item.status === filter
     return matchesSearch && matchesFilter
@@ -39,7 +39,7 @@ export default function SupplierInventoryPage() {
 
   return (
     <div className="flex min-h-screen">
-      <DashboardSidebar type="supplier" />
+      <DashboardSidebar type="supplier" navItems={[]} />
       <div className="flex-1 lg:pl-64">
         <DashboardHeader type="supplier" userName="MedSupply Kenya" />
 

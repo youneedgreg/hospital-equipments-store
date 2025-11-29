@@ -55,7 +55,7 @@ const lowStockProducts = [
 export default function SupplierDashboardPage() {
   return (
     <div className="flex min-h-screen">
-      <DashboardSidebar type="supplier" />
+      <DashboardSidebar type="supplier" navItems={[]} />
       <div className="flex-1 lg:pl-64">
         <DashboardHeader type="supplier" userName="MedSupply Kenya" />
 
