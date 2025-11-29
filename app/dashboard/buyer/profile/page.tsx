@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { DashboardSidebar } from "@/components/dashboard/dashboard-sidebar"
 import { DashboardHeader } from "@/components/dashboard/dashboard-header"
 import { Button } from "@/components/ui/button"
@@ -10,6 +10,25 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Loader2, Save, User, ShoppingCart, MessageSquare, Settings } from "lucide-react"
+import { Spinner } from "@/components/ui/spinner"
+import { useToast } from "@/components/ui/use-toast"
+
+interface UserProfile {
+  id: string
+  full_name: string | null
+  email: string | null
+  role: string | null
+  phone_number: string | null
+  address: string | null
+}
+
+interface UserData {
+  user: {
+    id: string
+    email: string | null
+    profile: UserProfile
+  }
+}
 
 const buyerNavItems = [
   { href: "/dashboard/buyer", label: "Dashboard", icon: "User" },
@@ -19,19 +38,83 @@ const buyerNavItems = [
 ]
 
 export default function BuyerProfilePage() {
+  const [userData, setUserData] = useState<UserData | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [loadingPage, setLoadingPage] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const { toast } = useToast()
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const response = await fetch("/api/user")
+        if (!response.ok) {
+          const errorData = await response.json()
+          throw new Error(errorData.error || "Failed to fetch user data")
+        }
+        const data: UserData = await response.json()
+        setUserData(data)
+      } catch (err: any) {
+        setError(err.message)
+        toast({
+          title: "Error",
+          description: err.message,
+          variant: "destructive",
+        })
+      } finally {
+        setLoadingPage(false)
+      }
+    }
+
+    fetchUserData()
+  }, [toast])
 
   const handleSave = async () => {
     setIsLoading(true)
+    // Here you would typically send updated profile data to an API
     await new Promise((resolve) => setTimeout(resolve, 1000))
     setIsLoading(false)
+    toast({
+      title: "Success",
+      description: "Profile updated successfully!",
+    })
   }
+
+  if (loadingPage) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <Spinner size="lg" />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex min-h-screen items-center justify-center text-red-500">
+        <p>Error: {error}</p>
+      </div>
+    )
+  }
+
+  const { user } = userData || { user: null }
+
+  if (!user || !user.profile) {
+    return (
+      <div className="flex min-h-screen items-center justify-center text-red-500">
+        <p>User data not found. Please log in again.</p>
+      </div>
+    )
+  }
+
+  const fullName = user.profile.full_name || ""
+  const firstName = fullName.split(" ")[0] || ""
+  const lastName = fullName.split(" ").slice(1).join(" ") || ""
 
   return (
     <div className="flex min-h-screen">
       <DashboardSidebar navItems={buyerNavItems} userType="buyer" />
       <div className="flex-1 lg:pl-64">
-        <DashboardHeader userType="buyer" userName="Dr. Sarah Wanjiku" />
+        <DashboardHeader userType="buyer" userName={user.profile.full_name || "Buyer"} />
 
         <main className="p-4 lg:p-6">
           <div className="mb-6">
@@ -54,7 +137,7 @@ export default function BuyerProfilePage() {
                 <div className="space-y-6">
                   <div className="flex items-center gap-6">
                     <div className="h-20 w-20 rounded-full bg-primary/10 flex items-center justify-center text-2xl font-bold text-primary">
-                      SW
+                      {fullName.charAt(0).toUpperCase() + (lastName ? lastName.charAt(0).toUpperCase() : "")}
                     </div>
                     <Button variant="outline">Change Photo</Button>
                   </div>
@@ -62,24 +145,25 @@ export default function BuyerProfilePage() {
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div className="space-y-2">
                       <Label htmlFor="firstName">First Name</Label>
-                      <Input id="firstName" defaultValue="Sarah" />
+                      <Input id="firstName" defaultValue={firstName} />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="lastName">Last Name</Label>
-                      <Input id="lastName" defaultValue="Wanjiku" />
+                      <Input id="lastName" defaultValue={lastName} />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="email">Email Address</Label>
-                      <Input id="email" type="email" defaultValue="sarah.wanjiku@hospital.co.ke" />
+                      <Input id="email" type="email" defaultValue={user.profile.email || ""} readOnly />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="phone">Phone Number</Label>
-                      <Input id="phone" defaultValue="+254 712 345 678" />
+                      <Input id="phone" defaultValue={user.profile.phone_number || ""} />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="role">Role/Title</Label>
-                      <Input id="role" defaultValue="Chief Medical Officer" />
+                      <Input id="role" defaultValue={user.profile.role || ""} readOnly />
                     </div>
+                    {/* Assuming department is not in profile for now */}
                     <div className="space-y-2">
                       <Label htmlFor="department">Department</Label>
                       <Input id="department" defaultValue="Administration" />
@@ -122,7 +206,7 @@ export default function BuyerProfilePage() {
                     </div>
                     <div className="space-y-2 sm:col-span-2">
                       <Label htmlFor="address">Address</Label>
-                      <Textarea id="address" defaultValue="Kenyatta Avenue, Nairobi" rows={2} />
+                      <Textarea id="address" defaultValue={user.profile.address || ""} rows={2} />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="city">City</Label>

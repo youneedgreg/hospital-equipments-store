@@ -35,7 +35,20 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  // Protected routes
+  let userRole: string | null = null
+  if (user) {
+    const { data: profile, error } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single()
+
+    if (!error && profile) {
+      userRole = profile.role
+    }
+  }
+
+  // Protected routes for unauthenticated users
   if (
     !user &&
     (request.nextUrl.pathname.startsWith("/dashboard") ||
@@ -47,6 +60,21 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
+  // Role-based protection for dashboard routes
+  if (user && request.nextUrl.pathname.startsWith("/dashboard")) {
+    const requestedDashboard = request.nextUrl.pathname.split("/")[2] // e.g., "buyer", "supplier", "admin"
+    if (userRole && requestedDashboard && requestedDashboard !== userRole) {
+      const url = request.nextUrl.clone()
+      url.pathname = `/dashboard/${userRole}`
+      return NextResponse.redirect(url)
+    } else if (!userRole && requestedDashboard) {
+      // If user has no role but is trying to access a dashboard, redirect to a default or login
+      const url = request.nextUrl.clone()
+      url.pathname = "/login"
+      return NextResponse.redirect(url)
+    }
+  }
+
   // Redirect authenticated users away from auth pages
   if (
     user &&
@@ -54,8 +82,7 @@ export async function updateSession(request: NextRequest) {
       request.nextUrl.pathname.startsWith("/register"))
   ) {
     const url = request.nextUrl.clone()
-    // Determine dashboard based on user role
-    url.pathname = "/dashboard/buyer" // Default, will be updated based on user role
+    url.pathname = `/dashboard/${userRole || "buyer"}` // Use actual user role or default to buyer
     return NextResponse.redirect(url)
   }
 

@@ -1,4 +1,7 @@
+"use client"
+
 import Link from "next/link"
+import { useState, useEffect } from "react"
 import { DashboardSidebar } from "@/components/dashboard/dashboard-sidebar"
 import { DashboardHeader } from "@/components/dashboard/dashboard-header"
 import { StatsCard } from "@/components/dashboard/stats-card"
@@ -6,53 +9,120 @@ import { OrderStatusBadge } from "@/components/dashboard/order-status-badge"
 import { Button } from "@/components/ui/button"
 import { formatPrice } from "@/lib/data"
 import { ShoppingBag, Package, Truck, CheckCircle, ArrowRight, ShoppingCart } from "lucide-react"
+import { Spinner } from "@/components/ui/spinner"
+import { useToast } from "@/components/ui/use-toast"
 
-const recentOrders = [
-  {
-    id: "BIO-12345678",
-    date: "Nov 20, 2025",
-    items: 3,
-    total: 125000,
-    paymentStatus: "paid" as const,
-    orderStatus: "shipped" as const,
-  },
-  {
-    id: "BIO-12345677",
-    date: "Nov 18, 2025",
-    items: 5,
-    total: 45000,
-    paymentStatus: "paid" as const,
-    orderStatus: "delivered" as const,
-  },
-  {
-    id: "BIO-12345676",
-    date: "Nov 15, 2025",
-    items: 2,
-    total: 285000,
-    paymentStatus: "pending" as const,
-    orderStatus: "pending" as const,
-  },
-  {
-    id: "BIO-12345675",
-    date: "Nov 10, 2025",
-    items: 8,
-    total: 32000,
-    paymentStatus: "paid" as const,
-    orderStatus: "delivered" as const,
-  },
-]
+interface OrderItem {
+  id: string
+  quantity: number
+  products: {
+    id: string
+    name: string
+    price: number
+    image_url: string | null
+  }
+}
+
+interface Order {
+  id: string
+  created_at: string
+  status: "pending" | "processing" | "shipped" | "delivered" | "cancelled"
+  total_amount: number
+  order_items: OrderItem[]
+}
+
+interface UserProfile {
+  id: string
+  full_name: string | null
+  email: string | null
+  role: string | null
+  phone_number: string | null
+  address: string | null
+}
+
+interface UserData {
+  user: {
+    id: string
+    email: string | null
+    profile: UserProfile
+  }
+  orders: Order[]
+}
 
 export default function BuyerDashboardPage() {
+  const [userData, setUserData] = useState<UserData | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const { toast } = useToast()
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const response = await fetch("/api/user")
+        if (!response.ok) {
+          const errorData = await response.json()
+          throw new Error(errorData.error || "Failed to fetch user data")
+        }
+        const data: UserData = await response.json()
+        setUserData(data)
+      } catch (err: any) {
+        setError(err.message)
+        toast({
+          title: "Error",
+          description: err.message,
+          variant: "destructive",
+        })
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchUserData()
+  }, [toast])
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <Spinner size="lg" />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex min-h-screen items-center justify-center text-red-500">
+        <p>Error: {error}</p>
+      </div>
+    )
+  }
+
+  const { user, orders } = userData || { user: null, orders: [] }
+
+  if (!user || !user.profile) {
+    return (
+      <div className="flex min-h-screen items-center justify-center text-red-500">
+        <p>User data not found. Please log in again.</p>
+      </div>
+    )
+  }
+
+  const totalOrders = orders.length
+  const inProgressOrders = orders.filter(
+    (order) => order.status === "pending" || order.status === "processing"
+  ).length
+  const inTransitOrders = orders.filter((order) => order.status === "shipped").length
+  const deliveredOrders = orders.filter((order) => order.status === "delivered").length
+
   return (
     <div className="flex min-h-screen">
       <DashboardSidebar type="buyer" navItems={[]} />
       <div className="flex-1 lg:pl-64">
-        <DashboardHeader type="buyer" userName="Dr. Sarah Wanjiku" />
+        <DashboardHeader type="buyer" userName={user.profile.full_name || "Buyer"} />
 
         <main className="p-4 lg:p-6">
           {/* Welcome Section */}
           <div className="mb-8">
-            <h1 className="text-2xl font-bold tracking-tight">Welcome back, Dr. Sarah!</h1>
+            <h1 className="text-2xl font-bold tracking-tight">Welcome back, {user.profile.full_name || "Buyer"}!</h1>
             <p className="text-muted-foreground mt-1">Here's what's happening with your orders today.</p>
           </div>
 
@@ -60,21 +130,20 @@ export default function BuyerDashboardPage() {
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
             <StatsCard
               title="Total Orders"
-              value="24"
+              value={totalOrders.toString()}
               description="All time orders"
               icon={<ShoppingBag className="h-5 w-5" />}
             />
             <StatsCard
               title="In Progress"
-              value="3"
+              value={inProgressOrders.toString()}
               description="Being processed"
               icon={<Package className="h-5 w-5" />}
-              trend={{ value: 12, isPositive: true }}
             />
-            <StatsCard title="In Transit" value="2" description="On the way" icon={<Truck className="h-5 w-5" />} />
+            <StatsCard title="In Transit" value={inTransitOrders.toString()} description="On the way" icon={<Truck className="h-5 w-5" />} />
             <StatsCard
               title="Delivered"
-              value="19"
+              value={deliveredOrders.toString()}
               description="Successfully received"
               icon={<CheckCircle className="h-5 w-5" />}
             />
@@ -114,33 +183,39 @@ export default function BuyerDashboardPage() {
                     <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">Date</th>
                     <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">Items</th>
                     <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">Total</th>
-                    <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">Payment</th>
                     <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">Status</th>
                     <th className="px-4 py-3 text-right text-sm font-medium text-muted-foreground">Action</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {recentOrders.map((order) => (
-                    <tr key={order.id} className="border-b last:border-0">
-                      <td className="px-4 py-3">
-                        <span className="font-medium">{order.id}</span>
-                      </td>
-                      <td className="px-4 py-3 text-sm text-muted-foreground">{order.date}</td>
-                      <td className="px-4 py-3 text-sm">{order.items} items</td>
-                      <td className="px-4 py-3 font-medium">{formatPrice(order.total)}</td>
-                      <td className="px-4 py-3">
-                        <OrderStatusBadge status={order.paymentStatus} type="payment" />
-                      </td>
-                      <td className="px-4 py-3">
-                        <OrderStatusBadge status={order.orderStatus} type="order" />
-                      </td>
-                      <td className="px-4 py-3 text-right">
-                        <Button variant="ghost" size="sm">
-                          View
-                        </Button>
+                  {orders.length === 0 ? (
+                    <tr>
+                      <td colSpan={7} className="text-center py-8 text-muted-foreground">
+                        No recent orders found.
                       </td>
                     </tr>
-                  ))}
+                  ) : (
+                    orders.map((order) => (
+                      <tr key={order.id} className="border-b last:border-0">
+                        <td className="px-4 py-3">
+                          <span className="font-medium">{order.id}</span>
+                        </td>
+                        <td className="px-4 py-3 text-sm text-muted-foreground">
+                          {new Date(order.created_at).toLocaleDateString()}
+                        </td>
+                        <td className="px-4 py-3 text-sm">{order.order_items.length} items</td>
+                        <td className="px-4 py-3 font-medium">{formatPrice(order.total_amount)}</td>
+                        <td className="px-4 py-3">
+                          <OrderStatusBadge status={order.status} type="order" />
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          <Button variant="ghost" size="sm">
+                            View
+                          </Button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>

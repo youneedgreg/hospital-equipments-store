@@ -115,29 +115,21 @@ export default function AdminDashboardPage() {
             <StatsCard
               title="Total Revenue"
               value="KES 12.5M"
-              change="+18.2%"
-              changeType="positive"
               icon={<DollarSign className="h-4 w-4 text-muted-foreground" />}
             />
             <StatsCard
               title="Total Orders"
               value="1,245"
-              change="+12.5%"
-              changeType="positive"
               icon={<ShoppingCart className="h-4 w-4 text-muted-foreground" />}
             />
             <StatsCard
               title="Active Suppliers"
               value="89"
-              change="+5"
-              changeType="positive"
               icon={<Building2 className="h-4 w-4 text-muted-foreground" />}
             />
             <StatsCard
               title="Registered Buyers"
               value="456"
-              change="+23"
-              changeType="positive"
               icon={<Users className="h-4 w-4 text-muted-foreground" />}
             />
           </div>
