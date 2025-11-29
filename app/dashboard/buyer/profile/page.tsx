@@ -9,7 +9,14 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Loader2, Save } from "lucide-react"
+import { Loader2, Save, User, ShoppingCart, MessageSquare, Settings } from "lucide-react"
+
+const buyerNavItems = [
+  { href: "/dashboard/buyer", label: "Dashboard", icon: "User" },
+  { href: "/dashboard/buyer/orders", label: "My Orders", icon: "ShoppingCart" },
+  { href: "/dashboard/buyer/profile", label: "Profile", icon: "Settings" },
+  { href: "/dashboard/buyer/support", label: "Support", icon: "MessageSquare" },
+]
 
 export default function BuyerProfilePage() {
   const [isLoading, setIsLoading] = useState(false)
@@ -22,9 +29,9 @@ export default function BuyerProfilePage() {
 
   return (
     <div className="flex min-h-screen">
-      <DashboardSidebar type="buyer" />
+      <DashboardSidebar navItems={buyerNavItems} userType="buyer" />
       <div className="flex-1 lg:pl-64">
-        <DashboardHeader type="buyer" userName="Dr. Sarah Wanjiku" />
+        <DashboardHeader userType="buyer" userName="Dr. Sarah Wanjiku" />
 
         <main className="p-4 lg:p-6">
           <div className="mb-6">

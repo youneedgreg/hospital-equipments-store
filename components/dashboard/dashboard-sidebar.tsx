@@ -8,12 +8,33 @@ import { cn } from "@/lib/utils"
 import {
   LogOut,
   Package,
+  User,
+  ShoppingCart,
+  Settings,
+  MessageCircle,
+  MessageSquare,
+  BarChart3,
+  Users,
+  Building2,
+  ShieldCheck,
 } from "lucide-react"
 
 interface SidebarLink {
   href: string
   label: string
-  icon: React.ElementType
+  icon: string
+}
+
+const iconMap: Record<string, React.ElementType> = {
+  User,
+  ShoppingCart,
+  Settings,
+  MessageCircle,
+  BarChart3,
+  Users,
+  Building2,
+  Package,
+  ShieldCheck,
 }
 
 interface DashboardSidebarProps {
@@ -43,6 +64,7 @@ export function DashboardSidebar({ userType, navItems }: DashboardSidebarProps) 
         {navItems.map((link) => {
           const isActive =
             pathname === link.href || (link.href !== `/dashboard/${userType}` && pathname.startsWith(link.href))
+          const IconComponent = iconMap[link.icon]
           return (
             <Link
               key={link.href}
@@ -54,7 +76,7 @@ export function DashboardSidebar({ userType, navItems }: DashboardSidebarProps) 
                   : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground",
               )}
             >
-              <link.icon className="h-5 w-5" />
+              {IconComponent && <IconComponent className="h-5 w-5" />}
               {link.label}
             </Link>
           )

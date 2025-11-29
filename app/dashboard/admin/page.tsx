@@ -26,13 +26,13 @@ import {
 import Link from "next/link"
 
 const adminNavItems = [
-  { href: "/dashboard/admin", label: "Overview", icon: BarChart3 },
-  { href: "/dashboard/admin/users", label: "Users", icon: Users },
-  { href: "/dashboard/admin/suppliers", label: "Suppliers", icon: Building2 },
-  { href: "/dashboard/admin/products", label: "Products", icon: Package },
-  { href: "/dashboard/admin/orders", label: "Orders", icon: ShoppingCart },
-  { href: "/dashboard/admin/verifications", label: "Verifications", icon: ShieldCheck },
-  { href: "/dashboard/admin/reports", label: "Reports", icon: BarChart3 },
+  { href: "/dashboard/admin", label: "Overview", icon: "BarChart3" },
+  { href: "/dashboard/admin/users", label: "Users", icon: "Users" },
+  { href: "/dashboard/admin/suppliers", label: "Suppliers", icon: "Building2" },
+  { href: "/dashboard/admin/products", label: "Products", icon: "Package" },
+  { href: "/dashboard/admin/orders", label: "Orders", icon: "ShoppingCart" },
+  { href: "/dashboard/admin/verifications", label: "Verifications", icon: "ShieldCheck" },
+  { href: "/dashboard/admin/reports", label: "Reports", icon: "BarChart3" },
 ]
 
 type OrderStatus = "completed" | "processing" | "pending" | string

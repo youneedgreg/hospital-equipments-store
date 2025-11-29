@@ -4,7 +4,14 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
-import { MessageCircle, Phone, Mail, FileQuestion, ChevronRight } from "lucide-react"
+import { MessageCircle, Phone, Mail, FileQuestion, ChevronRight, User, ShoppingCart, Settings } from "lucide-react"
+
+const buyerNavItems = [
+  { href: "/dashboard/buyer", label: "Dashboard", icon: "User" },
+  { href: "/dashboard/buyer/orders", label: "My Orders", icon: "ShoppingCart" },
+  { href: "/dashboard/buyer/profile", label: "Profile", icon: "Settings" },
+  { href: "/dashboard/buyer/support", label: "Support", icon: "MessageCircle" },
+]
 
 const faqs = [
   {
@@ -25,7 +32,7 @@ const faqs = [
 export default function BuyerSupportPage() {
   return (
     <div className="flex min-h-screen">
-      <DashboardSidebar type="buyer" />
+      <DashboardSidebar navItems={buyerNavItems} userType="buyer" />
       <div className="flex-1 lg:pl-64">
         <DashboardHeader type="buyer" userName="Dr. Sarah Wanjiku" />
 

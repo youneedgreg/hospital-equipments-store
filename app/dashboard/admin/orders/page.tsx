@@ -49,13 +49,13 @@ import {
 } from "lucide-react"
 
 const adminNavItems = [
-  { href: "/dashboard/admin", label: "Overview", icon: <BarChart3 className="h-4 w-4" /> },
-  { href: "/dashboard/admin/users", label: "Users", icon: <Users className="h-4 w-4" /> },
-  { href: "/dashboard/admin/suppliers", label: "Suppliers", icon: <Building2 className="h-4 w-4" /> },
-  { href: "/dashboard/admin/products", label: "Products", icon: <Package className="h-4 w-4" /> },
-  { href: "/dashboard/admin/orders", label: "Orders", icon: <ShoppingCart className="h-4 w-4" /> },
-  { href: "/dashboard/admin/verifications", label: "Verifications", icon: <ShieldCheck className="h-4 w-4" /> },
-  { href: "/dashboard/admin/reports", label: "Reports", icon: <BarChart3 className="h-4 w-4" /> },
+  { href: "/dashboard/admin", label: "Overview", icon: BarChart3 },
+  { href: "/dashboard/admin/users", label: "Users", icon: Users },
+  { href: "/dashboard/admin/suppliers", label: "Suppliers", icon: Building2 },
+  { href: "/dashboard/admin/products", label: "Products", icon: Package },
+  { href: "/dashboard/admin/orders", label: "Orders", icon: ShoppingCart },
+  { href: "/dashboard/admin/verifications", label: "Verifications", icon: ShieldCheck },
+  { href: "/dashboard/admin/reports", label: "Reports", icon: BarChart3 },
 ]
 
 const orders = [
