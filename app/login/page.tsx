@@ -35,8 +35,12 @@ export default function LoginPage() {
         variant: "destructive",
       })
       setIsLoading(false)
+    } else {
+      toast({
+        title: "Login successful",
+        description: "You will be redirected to your dashboard shortly.",
+      })
     }
-    // If successful, redirect happens in the server action
   }
 
   return (

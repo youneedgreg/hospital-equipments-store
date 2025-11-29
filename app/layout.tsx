@@ -16,6 +16,8 @@ export const metadata: Metadata = {
   generator: "v0.app",
 }
 
+import { Toaster } from "@/components/ui/sonner"
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -27,6 +29,7 @@ export default function RootLayout({
         <UserProvider>
           <CartProvider>{children}</CartProvider>
         </UserProvider>
+        <Toaster />
         <Analytics />
       </body>
     </html>
