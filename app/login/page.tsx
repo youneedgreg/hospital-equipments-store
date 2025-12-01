@@ -11,8 +11,9 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Eye, EyeOff, Loader2 } from "lucide-react"
-import { signIn } from "@/lib/actions/auth"
+import { signIn, signInWithMagicLink, signInWithOtp, verifyOtp } from "@/lib/actions/auth"
 import { useToast } from "@/hooks/use-toast"
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp"
 
 export default function LoginPage() {
   const router = useRouter()
@@ -20,6 +21,9 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [activeTab, setActiveTab] = useState("buyer")
+  const [magicLinkSent, setMagicLinkSent] = useState(false)
+  const [otpSent, setOtpSent] = useState(false)
+  const [email, setEmail] = useState("")
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -43,6 +47,64 @@ export default function LoginPage() {
     }
   }
 
+  const handleMagicLink = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    setIsLoading(true)
+    const formData = new FormData(e.currentTarget)
+    const email = formData.get("email") as string
+    const result = await signInWithMagicLink(email)
+    setIsLoading(false)
+
+    if (result?.error) {
+      toast({
+        title: "Error",
+        description: result.error,
+        variant: "destructive",
+      })
+    } else {
+      setMagicLinkSent(true)
+    }
+  }
+
+  const handleSendOtp = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    setIsLoading(true)
+    const formData = new FormData(e.currentTarget)
+    const email = formData.get("email") as string
+    setEmail(email)
+    const result = await signInWithOtp(email)
+    setIsLoading(false)
+
+    if (result?.error) {
+      toast({
+        title: "Error",
+        description: result.error,
+        variant: "destructive",
+      })
+    } else {
+      setOtpSent(true)
+    }
+  }
+
+  const handleVerifyOtp = async (otp: string) => {
+    setIsLoading(true)
+    const result = await verifyOtp(email, otp)
+    setIsLoading(false)
+
+    if (result?.error) {
+      toast({
+        title: "Error",
+        description: result.error,
+        variant: "destructive",
+      })
+    } else {
+      toast({
+        title: "Login successful",
+        description: "You will be redirected to your dashboard shortly.",
+      })
+    }
+  }
+
   return (
     <div className="min-h-screen flex">
       {/* Left Panel - Form */}
@@ -57,9 +119,11 @@ export default function LoginPage() {
           <p className="mt-2 text-muted-foreground">Sign in to your account to continue</p>
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-8">
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="buyer">Buyer</TabsTrigger>
               <TabsTrigger value="supplier">Supplier</TabsTrigger>
+              <TabsTrigger value="magiclink">Magic Link</TabsTrigger>
+              <TabsTrigger value="otp">OTP</TabsTrigger>
             </TabsList>
 
             <TabsContent value="buyer" className="mt-6">
@@ -134,6 +198,54 @@ export default function LoginPage() {
                   Sign in as Supplier
                 </Button>
               </form>
+            </TabsContent>
+
+            <TabsContent value="magiclink" className="mt-6">
+              {magicLinkSent ? (
+                <div className="text-center text-muted-foreground">
+                  <p>A magic link has been sent to your email address. Click the link to sign in.</p>
+                </div>
+              ) : (
+                <form onSubmit={handleMagicLink} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="magic-email">Email address</Label>
+                    <Input id="magic-email" name="email" type="email" placeholder="you@example.com" required />
+                  </div>
+                  <Button type="submit" className="w-full" disabled={isLoading}>
+                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Send Magic Link
+                  </Button>
+                </form>
+              )}
+            </TabsContent>
+
+            <TabsContent value="otp" className="mt-6">
+              {!otpSent ? (
+                <form onSubmit={handleSendOtp} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="otp-email">Email address</Label>
+                    <Input id="otp-email" name="email" type="email" placeholder="you@example.com" required />
+                  </div>
+                  <Button type="submit" className="w-full" disabled={isLoading}>
+                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Send OTP
+                  </Button>
+                </form>
+              ) : (
+                <div className="space-y-4 text-center">
+                  <p className="text-muted-foreground">An OTP has been sent to {email}.</p>
+                  <InputOTP maxLength={6} onComplete={handleVerifyOtp}>
+                    <InputOTPGroup>
+                      <InputOTPSlot index={0} />
+                      <InputOTPSlot index={1} />
+                      <InputOTPSlot index={2} />
+                      <InputOTPSlot index={3} />
+                      <InputOTPSlot index={4} />
+                      <InputOTPSlot index={5} />
+                    </InputOTPGroup>
+                  </InputOTP>
+                </div>
+              )}
             </TabsContent>
           </Tabs>
 
