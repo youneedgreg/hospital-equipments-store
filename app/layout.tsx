@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   generator: "v0.app",
 }
 
-import { Toaster } from "@/components/ui/sonner"
+import { Toaster } from "@/components/ui/toaster"
 
 export default function RootLayout({
   children,

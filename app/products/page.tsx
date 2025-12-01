@@ -30,18 +30,19 @@ export default function ProductsPage() {
         (p) =>
           p.name.toLowerCase().includes(query) ||
           p.description.toLowerCase().includes(query) ||
-          p.category.toLowerCase().includes(query),
+          p.categories?.name.toLowerCase().includes(query) ||
+          p.suppliers?.business_name.toLowerCase().includes(query),
       )
     }
 
     // Category filter
     if (selectedCategories.length > 0) {
-      result = result.filter((p) => selectedCategories.includes(p.category))
+      result = result.filter((p) => selectedCategories.includes(p.category_id))
     }
 
     // Supplier filter
     if (selectedSuppliers.length > 0) {
-      result = result.filter((p) => selectedSuppliers.includes(p.supplier))
+      result = result.filter((p) => selectedSuppliers.includes(p.supplier_id || ''))
     }
 
     // Price filter

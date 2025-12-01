@@ -12,14 +12,14 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product }: ProductCardProps) {
-  const { addItem } = useCart()
+  const { addToCart } = useCart()
   const { toast } = useToast()
   const [isAdding, setIsAdding] = useState(false)
 
   const handleAddToCart = async () => {
     setIsAdding(true)
     try {
-      await addItem(product, 1)
+      await addToCart(product, 1)
       toast({
         title: "Added to cart",
         description: `${product.name} has been added to your cart.`,
@@ -40,16 +40,18 @@ export function ProductCard({ product }: ProductCardProps) {
       <Link href={`/products/${product.id}`} className="block">
         <div className="relative aspect-square overflow-hidden bg-muted">
           <img
-            src={product.image || "/placeholder.svg"}
+            src={product.image_url || "/placeholder.svg"}
             alt={product.name}
+            width={300}
+            height={300}
             className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
           />
-          {!product.inStock && (
+          {!product.in_stock && (
             <div className="absolute inset-0 flex items-center justify-center bg-background/80">
               <Badge variant="secondary">Out of Stock</Badge>
             </div>
           )}
-          {product.originalPrice && product.inStock && (
+          {product.original_price && product.in_stock && (
             <Badge className="absolute top-3 left-3 bg-destructive text-destructive-foreground">Sale</Badge>
           )}
         </div>
@@ -58,7 +60,7 @@ export function ProductCard({ product }: ProductCardProps) {
       <div className="p-4">
         <div className="mb-1">
           <Badge variant="outline" className="text-xs font-normal">
-            {product.category}
+            {product.categories?.name}
           </Badge>
         </div>
 
@@ -73,21 +75,21 @@ export function ProductCard({ product }: ProductCardProps) {
             <Star className="h-4 w-4 fill-chart-4 text-chart-4" />
             <span className="font-medium">{product.rating}</span>
           </div>
-          <span className="text-muted-foreground">({product.reviewCount} reviews)</span>
+          <span className="text-muted-foreground">({product.review_count} reviews)</span>
         </div>
 
         <div className="mt-1 text-xs text-muted-foreground">
-          by <span className="text-foreground">{product.supplier}</span>
+          by <span className="text-foreground">{product.suppliers?.business_name}</span>
         </div>
 
         <div className="mt-3 flex items-end justify-between">
           <div>
             <p className="text-lg font-bold">{formatPrice(product.price)}</p>
-            {product.originalPrice && (
-              <p className="text-sm text-muted-foreground line-through">{formatPrice(product.originalPrice)}</p>
+            {product.original_price && (
+              <p className="text-sm text-muted-foreground line-through">{formatPrice(product.original_price)}</p>
             )}
           </div>
-          <Button size="sm" disabled={!product.inStock || isAdding} onClick={handleAddToCart}>
+          <Button size="sm" disabled={!product.in_stock || isAdding} onClick={handleAddToCart}>
             <ShoppingCart className="h-4 w-4 mr-1" />
             {isAdding ? "Adding..." : "Add"}
           </Button>

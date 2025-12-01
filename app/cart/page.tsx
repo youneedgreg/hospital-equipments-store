@@ -1,20 +1,44 @@
 "use client"
 
 import Link from "next/link"
+import Image from "next/image"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
 import { useCart } from "@/lib/cart-context"
 import { formatPrice } from "@/lib/data"
-import { Minus, Plus, Trash2, ShoppingBag, ArrowRight } from "lucide-react"
+import { Minus, Plus, Trash2, ShoppingBag, ArrowRight, Loader2 } from "lucide-react"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 
 export default function CartPage() {
-  const { items, removeItem, updateQuantity, subtotal } = useCart()
+  const { items, removeItem, updateQuantity, subtotal, clearCart, loading } = useCart()
 
   const VAT_RATE = 0.16
   const vat = subtotal * VAT_RATE
   const deliveryEstimate = subtotal > 50000 ? 0 : 2500
   const total = subtotal + vat + deliveryEstimate
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen flex-col">
+        <Header />
+        <main className="flex-1 flex items-center justify-center">
+          <Loader2 className="h-12 w-12 animate-spin text-primary" />
+        </main>
+        <Footer />
+      </div>
+    )
+  }
 
   if (items.length === 0) {
     return (
@@ -68,9 +92,11 @@ export default function CartPage() {
                         <div className="col-span-12 sm:col-span-6">
                           <div className="flex gap-4">
                             <div className="h-20 w-20 shrink-0 overflow-hidden rounded-lg bg-muted">
-                              <img
+                              <Image
                                 src={item.product.image || "/placeholder.svg"}
                                 alt={item.product.name}
+                                width={80}
+                                height={80}
                                 className="h-full w-full object-cover"
                               />
                             </div>
@@ -144,6 +170,25 @@ export default function CartPage() {
                 <Link href="/products">
                   <Button variant="outline">Continue Shopping</Button>
                 </Link>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive">Clear Cart</Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This will permanently remove all items from your cart.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={clearCart}>
+                        Yes, clear cart
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </div>
             </div>
 

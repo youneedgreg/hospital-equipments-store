@@ -80,7 +80,7 @@ export default function SuppliersPage() {
                       </div>
 
                       <div className="mt-4 flex flex-wrap gap-2">
-                        {supplier.categories.map((category) => (
+                      {supplier.product_categories.map((category) => (
                           <Badge key={category} variant="secondary" className="text-xs">
                             {category}
                           </Badge>

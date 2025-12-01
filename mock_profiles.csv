@@ -1,0 +1,6 @@
+id,email,full_name,phone,role,organization_name,organization_type
+660e8400-e29b-41d4-a716-446655440000,john@medicare.com,John Doe,+254700000000,supplier,MediCare Supplies,Medical Supplies Company
+660e8400-e29b-41d4-a716-446655440001,jane@healthtech.com,Jane Smith,+254700000001,supplier,HealthTech Solutions,Medical Equipment Provider
+660e8400-e29b-41d4-a716-446655440002,peter@safeguard.com,Peter Johnson,+254700000002,supplier,SafeGuard Medical,PPE Manufacturer
+660e8400-e29b-41d4-a716-446655440003,mary@proshield.com,Mary Wilson,+254700000003,supplier,ProShield Equipment,Safety Equipment Supplier
+660e8400-e29b-41d4-a716-446655440004,robert@medilisten.com,Robert Brown,+254700000004,supplier,MediListen Tools,Diagnostic Tools Manufacturer

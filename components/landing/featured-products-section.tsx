@@ -1,27 +1,46 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { products, Product } from "@/lib/data"
+import { Product, mapProductToLegacy } from "@/lib/data"
 import { ProductCard } from "@/components/products/product-card"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import Image from "next/image"
 
 export function FeaturedProductsSection() {
-  const featuredProducts = products.slice(0, 8)
+  const [featuredProducts, setFeaturedProducts] = useState<Product[]>([])
   const [searchQuery, setSearchQuery] = useState("")
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([])
   const [isPopupOpen, setIsPopupOpen] = useState(false)
+  const [loading, setLoading] = useState(true)
   const searchContainerRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    async function fetchFeaturedProducts() {
+      try {
+        const response = await fetch('/api/products?limit=8')
+        if (response.ok) {
+          const data = await response.json()
+          setFeaturedProducts(data.products || [])
+        }
+      } catch (error) {
+        console.error('Error fetching featured products:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchFeaturedProducts()
+  }, [])
 
   useEffect(() => {
     if (searchQuery.length > 1) {
       const lowercasedQuery = searchQuery.toLowerCase()
-      const results = products.filter(
+      const results = featuredProducts.filter(
         (product) =>
           product.name.toLowerCase().includes(lowercasedQuery) ||
           product.description.toLowerCase().includes(lowercasedQuery) ||
-          product.category.toLowerCase().includes(lowercasedQuery)
+          product.categories?.name.toLowerCase().includes(lowercasedQuery)
       )
       setFilteredProducts(results)
       setIsPopupOpen(true)
@@ -29,7 +48,7 @@ export function FeaturedProductsSection() {
       setFilteredProducts([])
       setIsPopupOpen(false)
     }
-  }, [searchQuery])
+  }, [searchQuery, featuredProducts])
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {

@@ -1,13 +1,24 @@
-# Buyer Dashboard Real-Time Integration
+- Update cart context to properly handle database products
+- Update categories section to use database
+- Update testimonials section to use database suppliers
+- Create API routes for categories and suppliers
+- Update cart context refresh function to map products properly
 
-## Tasks
-- [ ] Create functions to fetch buyer dashboard data from Supabase
-- [ ] Update buyer dashboard page to use real-time data
-- [ ] Implement real-time subscriptions for live updates
-- [ ] Test the integration
+## Remaining Tasks 📋
+- Update categories-section.tsx to fetch categories from database
+- Update testimonials-section.tsx to fetch suppliers from database
+- Create /api/categories route
+- Create /api/suppliers route
+- Update cart context to map database products to legacy format
+- Test cart functionality with database products
+- Update any remaining components using mock data
+- Verify all components work with database data
+=======
+## In Progress 🚧
+- Test cart functionality with database products
+- Verify all components work with database data
 
-## Details
-- Fetch recent orders from `orders` table filtered by buyer_id
-- Calculate stats (total orders, in-progress, in-transit, delivered) from database
-- Use Supabase real-time subscriptions for live updates
-- Replace static data in `app/dashboard/buyer/page.tsx`
+## Remaining Tasks 📋
+- Test the application to ensure everything works with database data
+- Update any remaining components if needed
+- Verify cart persistence and functionality

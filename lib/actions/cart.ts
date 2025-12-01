@@ -71,7 +71,7 @@ export async function addToCart(productId: string, quantity: number = 1) {
     }
   }
 
-  revalidatePath("/cart")
+  revalidatePath("/", "layout")
   return { error: null }
 }
 
@@ -101,7 +101,7 @@ export async function updateCartItem(productId: string, quantity: number) {
     return { error: error.message }
   }
 
-  revalidatePath("/cart")
+  revalidatePath("/", "layout")
   return { error: null }
 }
 
@@ -127,7 +127,7 @@ export async function removeFromCart(productId: string) {
     return { error: error.message }
   }
 
-  revalidatePath("/cart")
+  revalidatePath("/", "layout")
   return { error: null }
 }
 
@@ -149,7 +149,7 @@ export async function clearCart() {
     return { error: error.message }
   }
 
-  revalidatePath("/cart")
+  revalidatePath("/", "layout")
   return { error: null }
 }
 

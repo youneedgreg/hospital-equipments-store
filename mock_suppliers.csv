@@ -1,0 +1,6 @@
+id,profile_id,business_name,contact_person,position,business_email,business_phone,kra_pin,location,business_address,verification_status,rating,total_orders,logo_url
+550e8400-e29b-41d4-a716-446655440000,660e8400-e29b-41d4-a716-446655440000,MediCare Supplies,John Doe,CEO,john@medicare.com,+254700000000,KRA001,Nairobi,Koinange Street 123,verified,4.5,50,/placeholder-logo.png
+550e8400-e29b-41d4-a716-446655440001,660e8400-e29b-41d4-a716-446655440001,HealthTech Solutions,Jane Smith,Manager,jane@healthtech.com,+254700000001,KRA002,Mombasa,Luthuli Avenue 456,verified,4.7,75,/placeholder-logo.png
+550e8400-e29b-41d4-a716-446655440002,660e8400-e29b-41d4-a716-446655440002,SafeGuard Medical,Peter Johnson,Sales Director,peter@safeguard.com,+254700000002,KRA003,Kisumu,Oginga Odinga Road 789,verified,4.3,40,/placeholder-logo.png
+550e8400-e29b-41d4-a716-446655440003,660e8400-e29b-41d4-a716-446655440003,ProShield Equipment,Mary Wilson,Operations Manager,mary@proshield.com,+254700000003,KRA004,Nakuru,Koinange Street 101,verified,4.6,60,/placeholder-logo.png
+550e8400-e29b-41d4-a716-446655440004,660e8400-e29b-41d4-a716-446655440004,MediListen Tools,Robert Brown,Founder,robert@medilisten.com,+254700000004,KRA005,Eldoret,Uganda Road 202,verified,4.4,45,/placeholder-logo.png
