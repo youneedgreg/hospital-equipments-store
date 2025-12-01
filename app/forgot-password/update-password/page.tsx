@@ -1,10 +1,11 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { updatePassword } from "@/lib/actions/auth"
+import { createClient } from "@/lib/supabase/client"
 import { LogoIcon } from "@/components/icons"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -16,7 +17,40 @@ export default function UpdatePasswordPage() {
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
+  const [isAuthenticating, setIsAuthenticating] = useState(true)
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const supabase = createClient()
+
+  useEffect(() => {
+    const handleAuth = async () => {
+      const accessToken = searchParams.get('access_token')
+      const refreshToken = searchParams.get('refresh_token')
+      const type = searchParams.get('type')
+
+      if (accessToken && refreshToken && type === 'recovery') {
+        const { error } = await supabase.auth.setSession({
+          access_token: accessToken,
+          refresh_token: refreshToken,
+        })
+
+        if (error) {
+          toast.error('Invalid or expired reset link')
+          router.push('/forgot-password')
+          return
+        }
+      } else if (!accessToken || !refreshToken) {
+        // No tokens present, redirect to forgot password
+        toast.error('Invalid reset link')
+        router.push('/forgot-password')
+        return
+      }
+
+      setIsAuthenticating(false)
+    }
+
+    handleAuth()
+  }, [searchParams, supabase, router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -38,6 +72,17 @@ export default function UpdatePasswordPage() {
     } finally {
       setIsLoading(false)
     }
+  }
+
+  if (isAuthenticating) {
+    return (
+      <div className="min-h-screen flex items-center justify-center px-4 py-12">
+        <div className="w-full max-w-sm text-center">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+          <p className="text-muted-foreground">Verifying reset link...</p>
+        </div>
+      </div>
+    )
   }
 
   return (
