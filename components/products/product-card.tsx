@@ -3,12 +3,38 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Star, ShoppingCart } from "lucide-react"
 import { formatPrice, type Product } from "@/lib/data"
+import { useCart } from "@/lib/cart-context"
+import { useToast } from "@/hooks/use-toast"
+import { useState } from "react"
 
 interface ProductCardProps {
   product: Product
 }
 
 export function ProductCard({ product }: ProductCardProps) {
+  const { addItem } = useCart()
+  const { toast } = useToast()
+  const [isAdding, setIsAdding] = useState(false)
+
+  const handleAddToCart = async () => {
+    setIsAdding(true)
+    try {
+      await addItem(product, 1)
+      toast({
+        title: "Added to cart",
+        description: `${product.name} has been added to your cart.`,
+      })
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "There was an error adding the product to your cart.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsAdding(false)
+    }
+  }
+
   return (
     <div className="group rounded-xl border border-border bg-card overflow-hidden transition-all hover:shadow-lg hover:border-primary/20">
       <Link href={`/products/${product.id}`} className="block">
@@ -61,9 +87,9 @@ export function ProductCard({ product }: ProductCardProps) {
               <p className="text-sm text-muted-foreground line-through">{formatPrice(product.originalPrice)}</p>
             )}
           </div>
-          <Button size="sm" disabled={!product.inStock}>
+          <Button size="sm" disabled={!product.inStock || isAdding} onClick={handleAddToCart}>
             <ShoppingCart className="h-4 w-4 mr-1" />
-            Add
+            {isAdding ? "Adding..." : "Add"}
           </Button>
         </div>
       </div>

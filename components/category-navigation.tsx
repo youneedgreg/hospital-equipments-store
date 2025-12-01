@@ -12,7 +12,7 @@ import {
   NavigationMenuList,
   NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu"
-import { categories } from "@/lib/data"
+import { categories, categoryDetails } from "@/lib/data"
 import { cn } from "@/lib/utils"
 
 export function CategoryNavigation() {
@@ -27,7 +27,7 @@ export function CategoryNavigation() {
                 <div key={category.id} className="group relative">
                   <Link href={`/categories/${category.id}`} className="block">
                     <Image
-                      src={category.image}
+                      src={categoryDetails[category.id]?.image || "/placeholder.svg"}
                       alt={category.name}
                       width={200}
                       height={120}
@@ -42,15 +42,15 @@ export function CategoryNavigation() {
               ))}
             </div>
             <div className="bg-gray-100/50 p-4 dark:bg-gray-800/50">
-               <h4 className="font-semibold mb-2">Shop by Category</h4>
-               <ul className="grid grid-cols-3 gap-2">
+              <h4 className="font-semibold mb-2">Shop by Category</h4>
+              <ul className="grid grid-cols-3 gap-2">
                 {categories.map((category) => (
                   <li key={category.id}>
-                     <Link href={`/categories/${category.id}`} passHref legacyBehavior>
-                        <NavigationMenuLink className={cn("text-sm hover:underline")}>
-                          {category.name}
-                        </NavigationMenuLink>
-                     </Link>
+                    <NavigationMenuLink asChild>
+                      <Link href={`/categories/${category.id}`} className="text-sm hover:underline">
+                        {category.name}
+                      </Link>
+                    </NavigationMenuLink>
                   </li>
                 ))}
               </ul>
