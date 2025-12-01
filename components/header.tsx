@@ -17,10 +17,10 @@ import { useCart } from "@/lib/cart-context"
 import { useUser } from "@/lib/user-context"
 import { signOut } from "@/lib/actions/auth"
 import { Menu, ShoppingCart, User, LogOut, Settings } from "lucide-react"
+import { CategoryNavigation } from "./category-navigation"
 
 const navLinks = [
   { href: "/products", label: "Products" },
-  { href: "/categories", label: "Categories" },
   { href: "/suppliers", label: "Suppliers" },
   { href: "/about", label: "About" },
 ]
@@ -43,7 +43,14 @@ export function Header() {
         </Link>
 
         <nav className="hidden items-center gap-6 md:flex">
-          {navLinks.map((link) => (
+          <Link
+            href="/products"
+            className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+          >
+            Products
+          </Link>
+          <CategoryNavigation />
+          {navLinks.slice(1).map((link) => (
             <Link
               key={link.href}
               href={link.href}
@@ -139,6 +146,13 @@ export function Header() {
                       {link.label}
                     </Link>
                   ))}
+                   <Link
+                      href="/categories"
+                      className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                      onClick={() => setOpen(false)}
+                    >
+                      Categories
+                    </Link>
                   <Link
                     href="/cart"
                     className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground flex items-center gap-2"
