@@ -8,7 +8,7 @@ import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { getProductById, formatPrice, products } from "@/lib/data"
+import { getProductById, formatPrice, products, mapProductToLegacy, LegacyProduct } from "@/lib/data"
 import { ProductCard } from "@/components/products/product-card"
 import { Star, ShoppingCart, Minus, Plus, Truck, Shield, MessageCircle, ChevronLeft, Check } from "lucide-react"
 
@@ -17,7 +17,8 @@ export default function ProductDetailPage() {
   const router = useRouter()
   const [quantity, setQuantity] = useState(1)
 
-  const product = getProductById(params.id as string)
+  const productData = getProductById(params.id as string)
+  const product = productData ? mapProductToLegacy(productData) : undefined
 
   if (!product) {
     return (
