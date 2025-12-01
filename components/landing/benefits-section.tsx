@@ -28,7 +28,7 @@ export function BenefitsSection() {
     <section className="py-16 bg-background">
       <div className="container mx-auto px-4">
         <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold tracking-tight sm:text-4xl text-balance">Why BIOSYTEMS Marketplace?</h2>
+          <h2 className="text-2xl font-bold tracking-tight sm:text-4xl text-balance">Why BIOSYTEMS Marketplace?</h2>
           <p className="mt-3 text-lg text-muted-foreground max-w-2xl mx-auto">
             Marketplace features built for healthcare procurement — transparent listings, secure payments, and end-to-end services.
           </p>
@@ -49,7 +49,7 @@ export function BenefitsSection() {
         {/* Services row (explicitly listing the after-sales services you requested) */}
         <div className="mt-8 rounded-xl border border-border bg-card p-6">
           <h4 className="font-semibold mb-3">Included marketplace services</h4>
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-y-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-start gap-3">
               <ToolIcon className="h-6 w-6" />
               <div>

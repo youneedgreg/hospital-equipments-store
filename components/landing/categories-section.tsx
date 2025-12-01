@@ -11,7 +11,7 @@ export function CategoriesSection() {
       <div className="container mx-auto px-4">
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8">
           <div>
-            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">Browse by Category</h2>
+            <h2 className="text-2xl font-bold tracking-tight sm:text-4xl">Browse by Category</h2>
             <p className="mt-2 text-muted-foreground">Find the medical supplies you need — from single items to bulk orders.</p>
           </div>
           <Link href="/categories" className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline">
