@@ -18,39 +18,67 @@ export default function UpdatePasswordPageContent() {
   const [confirmPassword, setConfirmPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [isAuthenticating, setIsAuthenticating] = useState(true)
+  const [invalidLink, setInvalidLink] = useState(false)
+
   const router = useRouter()
   const searchParams = useSearchParams()
   const supabase = createClient()
 
+  // Read token from URL fragment like "#access_token=...&refresh_token=...&type=recovery"
+  const getFromHash = (key: string): string | null => {
+    if (typeof window === "undefined") return null
+    const hash = window.location.hash || ""
+    if (!hash) return null
+    const params = new URLSearchParams(hash.replace(/^#/, ""))
+    return params.get(key)
+  }
+
   useEffect(() => {
     const handleAuth = async () => {
-      const accessToken = searchParams.get('access_token')
-      const refreshToken = searchParams.get('refresh_token')
-      const type = searchParams.get('type')
+      const accessToken =
+        searchParams.get("access_token") ?? getFromHash("access_token")
+      const refreshToken =
+        searchParams.get("refresh_token") ?? getFromHash("refresh_token")
+      const type = searchParams.get("type") ?? getFromHash("type")
 
-      if (accessToken && refreshToken && type === 'recovery') {
+      // Ensure it's the recovery flow and we have required tokens.
+      // Types are string | null from get/search, so we check at runtime before calling setSession.
+      if (accessToken && type === "recovery") {
+        if (!refreshToken) {
+          // Missing refresh token — very common when link is opened inside some email clients.
+          toast.error(
+            "Reset link missing required data. Try opening the email link in your browser or request a new reset email."
+          )
+          setInvalidLink(true)
+          setIsAuthenticating(false)
+          return
+        }
+
+        // Now both accessToken and refreshToken are non-null strings — safe to call setSession
         const { error } = await supabase.auth.setSession({
           access_token: accessToken,
           refresh_token: refreshToken,
         })
 
         if (error) {
-          toast.error('Invalid or expired reset link')
-          router.push('/forgot-password')
+          toast.error("Invalid or expired reset link.")
+          setInvalidLink(true)
+          setIsAuthenticating(false)
           return
         }
-      } else if (!accessToken || !refreshToken) {
-        // No tokens present, redirect to forgot password
-        toast.error('Invalid reset link')
-        router.push('/forgot-password')
+
+        setIsAuthenticating(false)
         return
       }
 
+      // Tokens missing or not recovery type
+      setInvalidLink(true)
       setIsAuthenticating(false)
     }
 
     handleAuth()
-  }, [searchParams, supabase, router])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams, supabase])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -68,6 +96,7 @@ export default function UpdatePasswordPageContent() {
         router.push("/login")
       }
     } catch (error) {
+      console.error(error)
       toast.error("An unexpected error occurred.")
     } finally {
       setIsLoading(false)
@@ -85,6 +114,30 @@ export default function UpdatePasswordPageContent() {
     )
   }
 
+  if (invalidLink) {
+    return (
+      <div className="min-h-screen flex items-center justify-center px-4 py-12">
+        <div className="w-full max-w-sm text-center">
+          <LogoIcon className="h-10 w-10 mx-auto mb-6" />
+          <h2 className="text-xl font-semibold mb-2">Invalid or expired reset link</h2>
+          <p className="text-muted-foreground mb-6">
+            The password reset link appears to be invalid or missing required data. This can happen
+            if the link was opened inside an email app that strips secure tokens. Please open the
+            email link in your browser or request a new password reset email.
+          </p>
+          <div className="flex gap-2 justify-center">
+            <Link href="/forgot-password">
+              <Button>Request new reset email</Button>
+            </Link>
+            <Link href="/login" className="inline-flex items-center">
+              <Button variant="ghost">Back to login</Button>
+            </Link>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-sm">
@@ -95,9 +148,7 @@ export default function UpdatePasswordPageContent() {
 
         <div className="text-center mb-8">
           <h1 className="text-2xl font-bold tracking-tight">Update your password</h1>
-          <p className="mt-2 text-muted-foreground">
-            Enter your new password below.
-          </p>
+          <p className="mt-2 text-muted-foreground">Enter your new password below.</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
