@@ -4,7 +4,7 @@ import type React from "react"
 
 import { useState } from "react"
 import Link from "next/link"
-import { resetPassword } from "@/lib/actions/auth"
+import { resetPassword, signInWithMagicLink } from "@/lib/actions/auth"
 import { LogoIcon } from "@/components/icons"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -15,6 +15,7 @@ import { toast } from "sonner"
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("")
   const [isLoading, setIsLoading] = useState(false)
+  const [isMagicLinkLoading, setIsMagicLinkLoading] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -33,6 +34,30 @@ export default function ForgotPasswordPage() {
       toast.error("An unexpected error occurred.")
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  const handleMagicLinkSignIn = async (
+    e: React.MouseEvent<HTMLButtonElement>
+  ) => {
+    e.preventDefault()
+    if (!email) {
+      toast.error("Please enter your email address.")
+      return
+    }
+    setIsMagicLinkLoading(true)
+    try {
+      const result = await signInWithMagicLink(email)
+      if (result?.error) {
+        toast.error(result.error)
+      } else {
+        setIsSubmitted(true)
+        toast.success("Check your email for a magic link to log in.")
+      }
+    } catch (error) {
+      toast.error("An unexpected error occurred.")
+    } finally {
+      setIsMagicLinkLoading(false)
     }
   }
 
@@ -70,6 +95,27 @@ export default function ForgotPasswordPage() {
               <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Send Reset Link
+              </Button>
+              <div className="relative my-4">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-background px-2 text-muted-foreground">
+                    Or
+                  </span>
+                </div>
+              </div>
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={handleMagicLinkSignIn}
+                disabled={isMagicLinkLoading || isLoading}
+              >
+                {isMagicLinkLoading && (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                )}
+                Sign in with Magic Link
               </Button>
             </form>
           </>

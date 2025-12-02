@@ -223,6 +223,24 @@ export async function changePassword(password: string, newPassword: string) {
 		return { error: "You must be logged in to change your password." }
 	}
 
+  const errors: string[] = []
+  if (newPassword.length < 8) {
+    errors.push("New password must be at least 8 characters long.")
+  }
+  if (!/[a-z]/.test(newPassword)) {
+    errors.push("New password must contain at least one lowercase letter.")
+  }
+  if (!/[A-Z]/.test(newPassword)) {
+    errors.push("New password must contain at least one uppercase letter.")
+  }
+  if (!/[!@#$%^&*]/.test(newPassword)) {
+    errors.push("New password must contain at least one symbol.")
+  }
+
+  if (errors.length > 0) {
+    return { error: errors.join(" ") }
+  }
+
 	const { error: signInError } = await supabase.auth.signInWithPassword({
 		email: user.email!,
 		password,

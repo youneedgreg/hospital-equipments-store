@@ -154,6 +154,29 @@ export default function BuyerProfilePage() {
   }
 
   const handleChangePassword = async () => {
+    const errors: string[] = []
+    if (newPassword.length < 8) {
+      errors.push("New password must be at least 8 characters long.")
+    }
+    if (!/[a-z]/.test(newPassword)) {
+      errors.push("New password must contain at least one lowercase letter.")
+    }
+    if (!/[A-Z]/.test(newPassword)) {
+      errors.push("New password must contain at least one uppercase letter.")
+    }
+    if (!/[!@#$%^&*]/.test(newPassword)) {
+      errors.push("New password must contain at least one symbol.")
+    }
+
+    if (errors.length > 0) {
+      toast({
+        title: "Error",
+        description: errors.join(" "),
+        variant: "destructive",
+      })
+      return
+    }
+
     if (newPassword !== confirmPassword) {
       toast({
         title: "Error",

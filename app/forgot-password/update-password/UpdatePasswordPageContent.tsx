@@ -15,6 +15,7 @@ import { toast } from "sonner"
 export default function UpdatePasswordPageContent() {
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
+  const [passwordErrors, setPasswordErrors] = useState<string[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [isAuthenticating, setIsAuthenticating] = useState(true)
   const [invalidLink, setInvalidLink] = useState(false)
@@ -111,6 +112,25 @@ export default function UpdatePasswordPageContent() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    const errors: string[] = []
+    if (password.length < 8) {
+      errors.push("Password must be at least 8 characters long.")
+    }
+    if (!/[a-z]/.test(password)) {
+      errors.push("Password must contain at least one lowercase letter.")
+    }
+    if (!/[A-Z]/.test(password)) {
+      errors.push("Password must contain at least one uppercase letter.")
+    }
+    if (!/[!@#$%^&*]/.test(password)) {
+      errors.push("Password must contain at least one symbol.")
+    }
+
+    if (errors.length > 0) {
+      setPasswordErrors(errors)
+      return
+    }
+
     if (password !== confirmPassword) {
       toast.error("Passwords do not match")
       return
@@ -229,6 +249,13 @@ export default function UpdatePasswordPageContent() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="password">New Password</Label>
+            {passwordErrors.length > 0 && (
+              <div className="text-red-500 text-sm">
+                {passwordErrors.map((error) => (
+                  <p key={error}>{error}</p>
+                ))}
+              </div>
+            )}
             <Input
               id="password"
               type="password"
