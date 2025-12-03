@@ -1,16 +1,7 @@
 export function LogoIcon({ className }: { className?: string }) {
   return (
-    <svg className={className} viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect width="40" height="40" rx="8" className="fill-primary" />
-      <path
-        d="M12 20h16M20 12v16"
-        stroke="currentColor"
-        strokeWidth="3"
-        strokeLinecap="round"
-        className="stroke-primary-foreground"
-      />
-      <circle cx="20" cy="20" r="6" className="stroke-primary-foreground" strokeWidth="2" fill="none" />
-    </svg>
+    // eslint-disable-next-line @next/next/no-img-element
+    <img src="/biosystems logo.jpeg" alt="BIOSYSTEMS Logo" className={className} />
   )
 }
 

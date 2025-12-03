@@ -138,44 +138,7 @@ export async function signInWithMagicLink(email: string) {
   return { error: null }
 }
 
-export async function signInWithOtp(email: string) {
-  const supabase = await createClient()
-  const { error } = await supabase.auth.signInWithOtp({
-    email,
-  })
 
-  if (error) {
-    return { error: error.message }
-  }
-
-  return { error: null }
-}
-
-export async function verifyOtp(email: string, token: string) {
-  const supabase = await createClient()
-  const { data, error } = await supabase.auth.verifyOtp({
-    email,
-    token,
-    type: 'email',
-  })
-
-  if (error) {
-    return { error: error.message }
-  }
-  
-  if (data.user) {
-    // Get user role from profile
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", data.user.id)
-      .single()
-
-    const role = profile?.role || "buyer"
-    revalidatePath("/", "layout")
-    redirect("/dashboard/" + role)
-  }
-}
 
 export async function signOut() {
   const supabase = await createClient()

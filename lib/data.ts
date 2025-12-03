@@ -46,21 +46,31 @@ export interface LegacyProduct {
 }
 
 export const categories = [
-  { id: '1', name: 'Medical Equipment' },
-  { id: '2', name: 'Medical Supplies' },
-  { id: '3', name: 'Diagnostics' },
-  { id: '4', name: 'PPE' },
-  { id: '5', name: 'Mobility' },
-  { id: '6', name: 'Consumables' },
+  { id: '1', name: 'Diagnostic Devices' },
+  { id: '2', name: 'Therapeutic & Surgical Devices' },
+  { id: '3', name: 'Implantable Devices' },
+  { id: '4', name: 'Life Support & Critical Care Devices' },
+  { id: '5', name: 'Disposables & Consumables' },
+  { id: '6', name: 'Rehabilitation & Assistive Devices' },
+  { id: '7', name: 'Hospital Furniture & Infrastructures' },
+  { id: '8', name: 'Sterilization & Infection Control' },
+  { id: '9', name: 'Dental Equipment' },
+  { id: '10', name: 'Laboratory Equipment' },
+  { id: '11', name: 'Home Care & Telehealth Devices' },
 ];
 
 export const categoryDetails: { [key: string]: { image: string } } = {
-  '1': { image: '/hospital-bed-medical-equipment.jpg' },
-  '2': { image: '/medical-consumables-syringes-supplies.jpg' },
-  '3': { image: '/diagnostic-medical-tools-stethoscope.jpg' },
-  '4': { image: '/medical-ppe-masks-gloves-safety-equipment.jpg' },
-  '5': { image: '/wheelchair-mobility-aids-medical.jpg' },
-  '6': { image: '/medical-consumables-syringes-bandages.jpg' },
+  '1': { image: '/diagnostic-medical-tools-stethoscope.jpg' },
+  '2': { image: '/surgical-instruments-medical-tools.jpg' },
+  '3': { image: '/implantable-devices.jpg' }, // Placeholder for Implantable Devices
+  '4': { image: '/patient-monitor-medical.jpg' }, // Example for Life Support
+  '5': { image: '/medical-consumables-syringes-bandages.jpg' },
+  '6': { image: '/wheelchair-mobility-aids-medical.jpg' },
+  '7': { image: '/hospital-bed-medical-equipment.jpg' },
+  '8': { image: '/infestation-control.jpg' }, // Placeholder for Sterilization
+  '9': { image: '/dental-products.jpg' }, // Placeholder for Dental Equipment
+  '10': { image: '/laboratory-equipment-medical-centrifuge.jpg' },
+  '11': { image: '/home-care.png' }, // Placeholder for Home Care
 };
 
 export const products: Product[] = [
@@ -105,14 +115,14 @@ export const supplierDetails = [
         reviews: 120,
         location: 'Nairobi, Kenya',
         since: 2010,
-        product_categories: ['Medical Equipment', 'Consumables'],
+        product_categories: ['Diagnostic Devices', 'Disposables & Consumables'],
         response_rate: 95,
         response_time: 'Within 24 hours',
         verified: true,
         verificationStatus: 'verified', // Added verification status
         productCount: 150, // Added product count
         totalOrders: 2500, // Added total orders
-        description: "General Medical is a leading supplier of medical equipment and consumables in Kenya. We are committed to providing high-quality products and excellent customer service."
+        description: "General Medical is a leading supplier of diagnostic devices and disposables & consumables in Kenya. We are committed to providing high-quality products and excellent customer service."
     },
     {
         id: '2',
@@ -123,14 +133,14 @@ export const supplierDetails = [
         reviews: 80,
         location: 'Mombasa, Kenya',
         since: 2015,
-        product_categories: ['Medical Supplies', 'Diagnostics'],
+        product_categories: ['Disposables & Consumables', 'Diagnostic Devices'],
         response_rate: 90,
         response_time: 'Within 48 hours',
         verified: true,
         verificationStatus: 'verified',
         productCount: 80,
         totalOrders: 1800,
-        description: "Pharma Co. specializes in pharmaceutical products and diagnostic tools, serving clinics and pharmacies across the region with reliable and innovative solutions."
+        description: "Pharma Co. specializes in disposables & consumables and diagnostic devices, serving clinics and pharmacies across the region with reliable and innovative solutions."
     },
 ];
 
