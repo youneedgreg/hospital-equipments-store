@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { DashboardSidebar } from "@/components/dashboard/dashboard-sidebar"
 import { DashboardHeader } from "@/components/dashboard/dashboard-header"
 import { DashboardMobileNav } from "@/components/dashboard/dashboard-mobile-nav"
@@ -24,6 +24,9 @@ import {
   XCircle,
 } from "lucide-react"
 import Link from "next/link"
+import { useToast } from "@/components/ui/use-toast"
+import { Spinner } from "@/components/ui/spinner"
+import { formatPrice } from "@/lib/data"
 
 const adminNavItems = [
   { href: "/dashboard/admin", label: "Overview", icon: "BarChart3" },
@@ -37,51 +40,80 @@ const adminNavItems = [
 
 type OrderStatus = "completed" | "processing" | "pending" | string
 
-const recentOrders = [
-  {
-    id: "ORD-2024-001",
-    buyer: "Nairobi Hospital",
-    amount: 125000,
-    status: "completed" as OrderStatus,
-    date: "2024-01-15",
-  },
-  {
-    id: "ORD-2024-002",
-    buyer: "Kenyatta National",
-    amount: 89500,
-    status: "processing" as OrderStatus,
-    date: "2024-01-15",
-  },
-  {
-    id: "ORD-2024-003",
-    buyer: "Mombasa Clinic",
-    amount: 45000,
-    status: "pending" as OrderStatus,
-    date: "2024-01-14",
-  },
-  {
-    id: "ORD-2024-004",
-    buyer: "Eldoret Medical",
-    amount: 156000,
-    status: "completed" as OrderStatus,
-    date: "2024-01-14",
-  },
-]
+interface AdminStats {
+  totalRevenue: number
+  totalOrders: number
+  activeSuppliers: number
+  registeredBuyers: number
+  pendingVerifications: number
+}
 
-const pendingVerifications = [
-  { id: 1, name: "MedEquip Kenya Ltd", type: "supplier", submitted: "2024-01-14", documents: 5 },
-  { id: 2, name: "Kisumu Health Supplies", type: "supplier", submitted: "2024-01-13", documents: 4 },
-  { id: 3, name: "Coast Medical Distributors", type: "supplier", submitted: "2024-01-12", documents: 6 },
-]
+interface RecentOrder {
+  id: string
+  created_at: string
+  status: OrderStatus
+  total_amount: number
+  profiles: {
+    full_name: string
+  }
+}
 
-const topSuppliers = [
-  { name: "MediSupply Kenya", sales: 2450000, orders: 156, rating: 4.9 },
-  { name: "LabEquip Africa", sales: 1890000, orders: 98, rating: 4.8 },
-  { name: "PharmaCare Ltd", sales: 1560000, orders: 234, rating: 4.7 },
-]
+interface PendingVerification {
+  id: string
+  created_at: string
+  status: string
+  profiles: {
+    full_name: string
+  }
+}
 
 export default function AdminDashboardPage() {
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
+  const [stats, setStats] = useState<AdminStats | null>(null)
+  const [recentOrders, setRecentOrders] = useState<RecentOrder[]>([])
+  const [pendingVerifications, setPendingVerifications] = useState<PendingVerification[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const { toast } = useToast()
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [statsResponse, recentActivityResponse] = await Promise.all([
+          fetch("/api/admin/stats"),
+          fetch("/api/admin/recent-activity"),
+        ])
+
+        if (!statsResponse.ok) {
+          const errorData = await statsResponse.json()
+          throw new Error(errorData.error || "Failed to fetch admin stats")
+        }
+
+        if (!recentActivityResponse.ok) {
+          const errorData = await recentActivityResponse.json()
+          throw new Error(errorData.error || "Failed to fetch recent activity")
+        }
+
+        const statsData: AdminStats = await statsResponse.json()
+        const recentActivityData = await recentActivityResponse.json()
+
+        setStats(statsData)
+        setRecentOrders(recentActivityData.recentOrders)
+        setPendingVerifications(recentActivityData.pendingVerifications)
+      } catch (err: any) {
+        setError(err.message)
+        toast({
+          title: "Error",
+          description: err.message,
+          variant: "destructive",
+        })
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [toast])
 
   const getStatusBadge = (status: OrderStatus) => {
     switch (status) {
@@ -94,6 +126,22 @@ export default function AdminDashboardPage() {
       default:
         return <Badge variant="secondary">{status}</Badge>
     }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <Spinner size="lg" />
+      </div>
+    )
+  }
+
+  if (error || !stats) {
+    return (
+      <div className="flex min-h-screen items-center justify-center text-red-500">
+        <p>Error: {error || "Failed to load dashboard stats."}</p>
+      </div>
+    )
   }
 
   return (
@@ -114,22 +162,22 @@ export default function AdminDashboardPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <StatsCard
               title="Total Revenue"
-              value="KES 12.5M"
+              value={formatPrice(stats.totalRevenue)}
               icon={<DollarSign className="h-4 w-4 text-muted-foreground" />}
             />
             <StatsCard
               title="Total Orders"
-              value="1,245"
+              value={stats.totalOrders.toString()}
               icon={<ShoppingCart className="h-4 w-4 text-muted-foreground" />}
             />
             <StatsCard
               title="Active Suppliers"
-              value="89"
+              value={stats.activeSuppliers.toString()}
               icon={<Building2 className="h-4 w-4 text-muted-foreground" />}
             />
             <StatsCard
               title="Registered Buyers"
-              value="456"
+              value={stats.registeredBuyers.toString()}
               icon={<Users className="h-4 w-4 text-muted-foreground" />}
             />
           </div>
@@ -143,7 +191,7 @@ export default function AdminDashboardPage() {
                 </div>
                 <div>
                   <p className="text-sm text-yellow-800 font-medium">Pending Verifications</p>
-                  <p className="text-2xl font-bold text-yellow-900">12</p>
+                  <p className="text-2xl font-bold text-yellow-900">{stats.pendingVerifications}</p>
                 </div>
                 <Button
                   variant="outline"
@@ -215,10 +263,10 @@ export default function AdminDashboardPage() {
                     <div key={order.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                       <div>
                         <p className="font-medium text-sm">{order.id}</p>
-                        <p className="text-xs text-muted-foreground">{order.buyer}</p>
+                        <p className="text-xs text-muted-foreground">{order.profiles.full_name}</p>
                       </div>
                       <div className="text-right">
-                        <p className="font-semibold text-sm">KES {order.amount.toLocaleString()}</p>
+                        <p className="font-semibold text-sm">{formatPrice(order.total_amount)}</p>
                         {getStatusBadge(order.status)}
                       </div>
                     </div>
@@ -245,13 +293,13 @@ export default function AdminDashboardPage() {
                       <div className="flex items-center gap-3">
                         <Avatar className="h-10 w-10">
                           <AvatarFallback className="bg-primary/10 text-primary">
-                            {item.name.charAt(0)}
+                            {item.profiles.full_name.charAt(0)}
                           </AvatarFallback>
                         </Avatar>
                         <div>
-                          <p className="font-medium text-sm">{item.name}</p>
+                          <p className="font-medium text-sm">{item.profiles.full_name}</p>
                           <p className="text-xs text-muted-foreground">
-                            {item.documents} documents · Submitted {item.submitted}
+                            Submitted {new Date(item.created_at).toLocaleDateString()}
                           </p>
                         </div>
                       </div>
@@ -269,48 +317,6 @@ export default function AdminDashboardPage() {
               </CardContent>
             </Card>
           </div>
-
-          {/* Top Suppliers */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Top Performing Suppliers</CardTitle>
-              <CardDescription>Highest revenue generators this month</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {topSuppliers.map((supplier, index) => (
-                  <div key={supplier.name} className="p-4 border rounded-lg">
-                    <div className="flex items-center gap-3 mb-3">
-                      <div
-                        className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold ${
-                          index === 0 ? "bg-yellow-500" : index === 1 ? "bg-gray-400" : "bg-amber-600"
-                        }`}
-                      >
-                        {index + 1}
-                      </div>
-                      <div>
-                        <p className="font-semibold text-sm">{supplier.name}</p>
-                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                          <span className="text-yellow-500">★</span>
-                          {supplier.rating}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-2 text-sm">
-                      <div>
-                        <p className="text-muted-foreground text-xs">Revenue</p>
-                        <p className="font-semibold">KES {(supplier.sales / 1_000_000).toFixed(1)}M</p>
-                      </div>
-                      <div>
-                        <p className="text-muted-foreground text-xs">Orders</p>
-                        <p className="font-semibold">{supplier.orders}</p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
         </main>
       </div>
     </div>

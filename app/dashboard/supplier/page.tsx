@@ -1,4 +1,7 @@
+"use client"
+
 import Link from "next/link"
+import { useState, useEffect } from "react"
 import { DashboardSidebar } from "@/components/dashboard/dashboard-sidebar"
 import { DashboardHeader } from "@/components/dashboard/dashboard-header"
 import { StatsCard } from "@/components/dashboard/stats-card"
@@ -6,53 +9,108 @@ import { OrderStatusBadge } from "@/components/dashboard/order-status-badge"
 import { Button } from "@/components/ui/button"
 import { formatPrice } from "@/lib/data"
 import { DollarSign, ShoppingBag, Package, AlertTriangle, ArrowRight, Plus } from "lucide-react"
+import { Spinner } from "@/components/ui/spinner"
+import { useToast } from "@/components/ui/use-toast"
 
-const recentOrders = [
-  {
-    id: "BIO-12345678",
-    buyer: "Nairobi Regional Hospital",
-    product: "Electric Hospital Bed - ICU Grade",
-    quantity: 2,
-    total: 570000,
-    date: "Nov 20, 2025",
-    status: "pending" as const,
-  },
-  {
-    id: "BIO-12345677",
-    buyer: "HealthFirst Clinics",
-    product: "N95 Respirator Masks - Box of 50",
-    quantity: 20,
-    total: 90000,
-    date: "Nov 19, 2025",
-    status: "confirmed" as const,
-  },
-  {
-    id: "BIO-12345676",
-    buyer: "Mombasa Medical Center",
-    product: "Patient Monitor - 6 Parameter",
-    quantity: 3,
-    total: 495000,
-    date: "Nov 18, 2025",
-    status: "shipped" as const,
-  },
-  {
-    id: "BIO-12345675",
-    buyer: "Kenya Red Cross",
-    product: "Wheelchair - Foldable Standard",
-    quantity: 10,
-    total: 280000,
-    date: "Nov 17, 2025",
-    status: "delivered" as const,
-  },
-]
+interface OrderItem {
+  quantity: number
+  products: {
+    name: string
+  }
+}
 
-const lowStockProducts = [
-  { name: "Surgical Instrument Set", stock: 3, threshold: 5 },
-  { name: "Laboratory Centrifuge", stock: 2, threshold: 5 },
-  { name: "Pulse Oximeter", stock: 0, threshold: 10 },
-]
+interface Order {
+  id: string
+  created_at: string
+  status: "pending" | "confirmed" | "shipped" | "delivered" | "cancelled"
+  total_amount: number
+  order_items: OrderItem[]
+  profiles: {
+    full_name: string
+  }
+}
+
+interface LowStockProduct {
+  name: string
+  stock_count: number
+  low_stock_threshold: number
+}
+
+interface Stats {
+  activeProducts: number
+  totalSales: number
+}
 
 export default function SupplierDashboardPage() {
+  const [orders, setOrders] = useState<Order[]>([])
+  const [lowStockProducts, setLowStockProducts] = useState<LowStockProduct[]>([])
+  const [stats, setStats] = useState<Stats>({ activeProducts: 0, totalSales: 0 })
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const { toast } = useToast()
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [ordersResponse, lowStockResponse, statsResponse] = await Promise.all([
+          fetch("/api/supplier/orders"),
+          fetch("/api/supplier/low-stock"),
+          fetch("/api/supplier/stats"),
+        ])
+
+        if (!ordersResponse.ok) {
+          const errorData = await ordersResponse.json()
+          throw new Error(errorData.error || "Failed to fetch orders")
+        }
+
+        if (!lowStockResponse.ok) {
+          const errorData = await lowStockResponse.json()
+          throw new Error(errorData.error || "Failed to fetch low stock products")
+        }
+
+        if (!statsResponse.ok) {
+          const errorData = await statsResponse.json()
+          throw new Error(errorData.error || "Failed to fetch stats")
+        }
+
+        const ordersData = await ordersResponse.json()
+        const lowStockData = await lowStockResponse.json()
+        const statsData = await statsResponse.json()
+
+        setOrders(ordersData.orders)
+        setLowStockProducts(lowStockData.products)
+        setStats(statsData)
+      } catch (err: any) {
+        setError(err.message)
+        toast({
+          title: "Error",
+          description: err.message,
+          variant: "destructive",
+        })
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [toast])
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <Spinner size="lg" />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex min-h-screen items-center justify-center text-red-500">
+        <p>Error: {error}</p>
+      </div>
+    )
+  }
+
   return (
     <div className="flex min-h-screen">
       <DashboardSidebar type="supplier" navItems={[]} />
@@ -70,26 +128,26 @@ export default function SupplierDashboardPage() {
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
             <StatsCard
               title="Total Sales"
-              value={formatPrice(2450000)}
+              value={formatPrice(stats.totalSales)}
               description="This month"
               icon={<DollarSign className="h-5 w-5" />}
               trend={{ value: 15, isPositive: true }}
             />
             <StatsCard
               title="Pending Orders"
-              value="8"
+              value={orders.filter((order) => order.status === "pending").length.toString()}
               description="Awaiting confirmation"
               icon={<ShoppingBag className="h-5 w-5" />}
             />
             <StatsCard
               title="Active Products"
-              value="47"
+              value={stats.activeProducts.toString()}
               description="Listed on marketplace"
               icon={<Package className="h-5 w-5" />}
             />
             <StatsCard
               title="Low Stock Alerts"
-              value="3"
+              value={lowStockProducts.length.toString()}
               description="Need restocking"
               icon={<AlertTriangle className="h-5 w-5" />}
             />
@@ -134,19 +192,19 @@ export default function SupplierDashboardPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {recentOrders.map((order) => (
+                    {orders.map((order) => (
                       <tr key={order.id} className="border-b last:border-0">
                         <td className="px-4 py-3">
                           <p className="font-medium">{order.id}</p>
-                          <p className="text-sm text-muted-foreground">{order.date}</p>
+                          <p className="text-sm text-muted-foreground">{new Date(order.created_at).toLocaleDateString()}</p>
                         </td>
                         <td className="px-4 py-3">
-                          <p className="text-sm">{order.buyer}</p>
+                          <p className="text-sm">{order.profiles.full_name}</p>
                           <p className="text-xs text-muted-foreground">
-                            {order.product} × {order.quantity}
+                            {order.order_items[0].products.name} × {order.order_items[0].quantity}
                           </p>
                         </td>
-                        <td className="px-4 py-3 font-medium">{formatPrice(order.total)}</td>
+                        <td className="px-4 py-3 font-medium">{formatPrice(order.total_amount)}</td>
                         <td className="px-4 py-3">
                           <OrderStatusBadge status={order.status} />
                         </td>
@@ -175,11 +233,11 @@ export default function SupplierDashboardPage() {
                   <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-destructive/10">
                     <div>
                       <p className="font-medium text-sm">{product.name}</p>
-                      <p className="text-xs text-muted-foreground">Threshold: {product.threshold} units</p>
+                      <p className="text-xs text-muted-foreground">Threshold: {product.low_stock_threshold} units</p>
                     </div>
                     <div className="text-right">
-                      <p className={`text-lg font-bold ${product.stock === 0 ? "text-destructive" : "text-chart-4"}`}>
-                        {product.stock}
+                      <p className={`text-lg font-bold ${product.stock_count === 0 ? "text-destructive" : "text-chart-4"}`}>
+                        {product.stock_count}
                       </p>
                       <p className="text-xs text-muted-foreground">in stock</p>
                     </div>

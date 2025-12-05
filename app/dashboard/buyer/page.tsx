@@ -7,10 +7,11 @@ import { DashboardHeader } from "@/components/dashboard/dashboard-header"
 import { StatsCard } from "@/components/dashboard/stats-card"
 import { OrderStatusBadge } from "@/components/dashboard/order-status-badge"
 import { Button } from "@/components/ui/button"
-import { formatPrice } from "@/lib/data"
+import { formatPrice, getProductById, mapProductToLegacy } from "@/lib/data"
 import { ShoppingBag, Package, Truck, CheckCircle, ArrowRight, ShoppingCart } from "lucide-react"
 import { Spinner } from "@/components/ui/spinner"
 import { useToast } from "@/components/ui/use-toast"
+import { useCart } from "@/lib/cart-context"
 
 interface OrderItem {
   id: string
@@ -54,6 +55,21 @@ export default function BuyerDashboardPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const { toast } = useToast()
+  const { addToCart } = useCart()
+
+  const handleReorder = (order: Order) => {
+    order.order_items.forEach((item) => {
+      const product = getProductById(item.products.id)
+      if (product) {
+        const legacyProduct = mapProductToLegacy(product)
+        addToCart(legacyProduct, item.quantity)
+      }
+    })
+    toast({
+      title: "Order Reordered",
+      description: "The items from your previous order have been added to your cart.",
+    })
+  }
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -209,8 +225,8 @@ export default function BuyerDashboardPage() {
                           <OrderStatusBadge status={order.status} type="order" />
                         </td>
                         <td className="px-4 py-3 text-right">
-                          <Button variant="ghost" size="sm">
-                            View
+                          <Button variant="ghost" size="sm" onClick={() => handleReorder(order)}>
+                            Reorder
                           </Button>
                         </td>
                       </tr>

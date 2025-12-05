@@ -26,3 +26,4 @@ export function transformProducts(supabaseProducts: any[]): Product[] {
   return supabaseProducts.map(transformProduct)
 }
 
+

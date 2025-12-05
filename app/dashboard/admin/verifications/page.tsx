@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { DashboardSidebar } from "@/components/dashboard/dashboard-sidebar"
 import { DashboardHeader } from "@/components/dashboard/dashboard-header"
 import { DashboardMobileNav } from "@/components/dashboard/dashboard-mobile-nav"
@@ -35,6 +35,9 @@ import {
   Download,
   AlertTriangle,
 } from "lucide-react"
+import Link from "next/link"
+import { useToast } from "@/components/ui/use-toast"
+import { Spinner } from "@/components/ui/spinner"
 
 const adminNavItems = [
   { href: "/dashboard/admin", label: "Overview", icon: "BarChart3" },
@@ -46,88 +49,161 @@ const adminNavItems = [
   { href: "/dashboard/admin/reports", label: "Reports", icon: "BarChart3" },
 ]
 
-const pendingVerifications = [
-  {
-    id: 1,
-    companyName: "MedEquip Kenya Ltd",
-    email: "info@medequip.co.ke",
-    phone: "+254 712 345 678",
-    kraPin: "P051234567A",
-    businessType: "Medical Equipment Distributor",
-    submittedDate: "2024-01-14",
-    documents: [
-      { name: "KRA Certificate", type: "pdf", status: "uploaded" },
-      { name: "Business Registration", type: "pdf", status: "uploaded" },
-      { name: "PPB License", type: "pdf", status: "uploaded" },
-      { name: "Director ID", type: "pdf", status: "uploaded" },
-      { name: "Bank Statement", type: "pdf", status: "uploaded" },
-    ],
-  },
-  {
-    id: 2,
-    companyName: "Kisumu Health Supplies",
-    email: "contact@kisumuhealthsupplies.co.ke",
-    phone: "+254 722 456 789",
-    kraPin: "P051234568B",
-    businessType: "Pharmaceutical Distributor",
-    submittedDate: "2024-01-13",
-    documents: [
-      { name: "KRA Certificate", type: "pdf", status: "uploaded" },
-      { name: "Business Registration", type: "pdf", status: "uploaded" },
-      { name: "PPB License", type: "pdf", status: "pending" },
-      { name: "Director ID", type: "pdf", status: "uploaded" },
-    ],
-  },
-  {
-    id: 3,
-    companyName: "Coast Medical Distributors",
-    email: "sales@coastmedical.co.ke",
-    phone: "+254 733 567 890",
-    kraPin: "P051234569C",
-    businessType: "Medical Supplies Wholesaler",
-    submittedDate: "2024-01-12",
-    documents: [
-      { name: "KRA Certificate", type: "pdf", status: "uploaded" },
-      { name: "Business Registration", type: "pdf", status: "uploaded" },
-      { name: "PPB License", type: "pdf", status: "uploaded" },
-      { name: "Director ID", type: "pdf", status: "uploaded" },
-      { name: "Bank Statement", type: "pdf", status: "uploaded" },
-      { name: "Warehouse Certification", type: "pdf", status: "uploaded" },
-    ],
-  },
-]
+interface VerificationDocument {
+  id: string
+  document_type: string
+  file_url: string
+  status: "uploaded" | "pending" | "approved" | "rejected"
+}
 
-const approvedVerifications = [
-  { id: 4, companyName: "MediSupply Kenya", approvedDate: "2024-01-10", verifiedBy: "Admin John" },
-  { id: 5, companyName: "LabEquip Africa", approvedDate: "2024-01-08", verifiedBy: "Admin Gregory" },
-  { id: 6, companyName: "PharmaCare Ltd", approvedDate: "2024-01-05", verifiedBy: "Admin John" },
-]
-
-const rejectedVerifications = [
-  { id: 7, companyName: "Unknown Supplies", rejectedDate: "2024-01-11", reason: "Invalid KRA PIN" },
-  { id: 8, companyName: "Fake Medical Co", rejectedDate: "2024-01-09", reason: "Fraudulent documents" },
-]
+interface Verification {
+  id: string
+  created_at: string
+  status: "pending" | "approved" | "rejected"
+  reason: string | null
+  profiles: {
+    full_name: string
+    email: string
+    phone: string | null
+    organization_name: string | null
+    organization_type: string | null
+    kra_pin: string | null
+  }
+  verification_documents: VerificationDocument[]
+}
 
 export default function AdminVerificationsPage() {
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
-  const [selectedVerification, setSelectedVerification] = useState<(typeof pendingVerifications)[0] | null>(null)
+  const [verifications, setVerifications] = useState<Verification[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const { toast } = useToast()
+
+  const [selectedVerification, setSelectedVerification] = useState<Verification | null>(null)
   const [reviewDialogOpen, setReviewDialogOpen] = useState(false)
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false)
   const [rejectionReason, setRejectionReason] = useState("")
 
-  const handleApprove = () => {
-    // Handle approval logic
-    setReviewDialogOpen(false)
-    setSelectedVerification(null)
+  useEffect(() => {
+    const fetchVerifications = async () => {
+      try {
+        const response = await fetch("/api/admin/verifications")
+        if (!response.ok) {
+          const errorData = await response.json()
+          throw new Error(errorData.error || "Failed to fetch verifications")
+        }
+        const data = await response.json()
+        setVerifications(data.verifications)
+      } catch (err: any) {
+        setError(err.message)
+        toast({
+          title: "Error",
+          description: err.message,
+          variant: "destructive",
+        })
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchVerifications()
+  }, [toast])
+
+  const handleApprove = async () => {
+    if (!selectedVerification) return
+
+    setIsLoading(true)
+    try {
+      const response = await fetch("/api/admin/verifications/update", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ verificationId: selectedVerification.id, status: "approved" }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || "Failed to approve verification")
+      }
+
+      toast({
+        title: "Success",
+        description: "Verification approved successfully!",
+      })
+      setReviewDialogOpen(false)
+      setSelectedVerification(null)
+      // Re-fetch verifications to update the lists
+      fetchVerifications()
+    } catch (err: any) {
+      toast({
+        title: "Error",
+        description: err.message,
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoading(false)
+    }
   }
 
-  const handleReject = () => {
-    // Handle rejection logic
-    setRejectDialogOpen(false)
-    setReviewDialogOpen(false)
-    setSelectedVerification(null)
-    setRejectionReason("")
+  const handleReject = async () => {
+    if (!selectedVerification || !rejectionReason.trim()) return
+
+    setIsLoading(true)
+    try {
+      const response = await fetch("/api/admin/verifications/update", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          verificationId: selectedVerification.id,
+          status: "rejected",
+          reason: rejectionReason,
+        }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || "Failed to reject verification")
+      }
+
+      toast({
+        title: "Success",
+        description: "Verification rejected successfully!",
+      })
+      setRejectDialogOpen(false)
+      setReviewDialogOpen(false)
+      setSelectedVerification(null)
+      setRejectionReason("")
+      // Re-fetch verifications to update the lists
+      fetchVerifications()
+    } catch (err: any) {
+      toast({
+        title: "Error",
+        description: err.message,
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const pendingVerifications = verifications.filter((v) => v.status === "pending")
+  const approvedVerifications = verifications.filter((v) => v.status === "approved")
+  const rejectedVerifications = verifications.filter((v) => v.status === "rejected")
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <Spinner size="lg" />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex min-h-screen items-center justify-center text-red-500">
+        <p>Error: {error}</p>
+      </div>
+    )
   }
 
   return (

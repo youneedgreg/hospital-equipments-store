@@ -38,7 +38,7 @@ export async function GET(request: Request) {
   }
 
   // Fetch user profile (map DB fields)
-  const { data: profile, error: profileError } = await supabase
+  let { data: profile, error: profileError } = await supabase
     .from("profiles")
     .select("id, full_name, email, role, phone, organization_name, organization_type")
     .eq("id", user.id)
@@ -46,7 +46,12 @@ export async function GET(request: Request) {
 
   if (profileError) {
     console.error("Error fetching profile:", profileError)
-    return NextResponse.json({ error: "Error fetching profile" }, { status: 500 })
+    // Fallback to user metadata if profile not found
+    if (user.user_metadata && user.user_metadata.role) {
+      profile = { ...profile, role: user.user_metadata.role }
+    } else {
+      return NextResponse.json({ error: "Error fetching profile" }, { status: 500 })
+    }
   }
 
   // Fetch orders (optional)
@@ -65,7 +70,9 @@ export async function GET(request: Request) {
     // continue — orders are optional, but if you prefer to fail, return 500 here
   }
 
-  return NextResponse.json({ user: { ...user, profile }, orders }, { status: 200 })
+  const redirectUrl = `/dashboard/${profile.role}`
+
+  return NextResponse.json({ user: { ...user, profile }, orders, redirectUrl }, { status: 200 })
 }
 
 export async function PATCH(request: Request) {

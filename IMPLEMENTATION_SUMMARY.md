@@ -214,3 +214,4 @@ export default function ProductsPage() {
 - See `SUPABASE_SETUP.md` for detailed setup instructions
 - See `README.md` for general project information
 
+

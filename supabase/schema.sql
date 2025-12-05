@@ -272,3 +272,4 @@ INSERT INTO public.categories (id, name, description) VALUES
   ('patient-monitoring', 'Patient Monitoring', 'Patient monitoring systems')
 ON CONFLICT (id) DO NOTHING;
 
+

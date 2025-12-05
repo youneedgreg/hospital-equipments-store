@@ -223,3 +223,4 @@ export async function changePassword(password: string, newPassword: string) {
 
 	return { success: true }
 }
+

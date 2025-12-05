@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { LogoIcon } from "@/components/icons"
@@ -21,6 +21,26 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [activeTab, setActiveTab] = useState("buyer")
   const [magicLinkSent, setMagicLinkSent] = useState(false)
+  const [loginSuccess, setLoginSuccess] = useState(false)
+
+  useEffect(() => {
+    if (loginSuccess) {
+      fetch("/api/user")
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.redirectUrl) {
+            router.push(data.redirectUrl)
+          } else {
+            // Handle error case where redirectUrl is not available
+            toast({
+              title: "Error",
+              description: "Could not redirect to dashboard.",
+              variant: "destructive",
+            })
+          }
+        })
+    }
+  }, [loginSuccess, router, toast])
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -41,6 +61,7 @@ export default function LoginPage() {
         title: "Login successful",
         description: "You will be redirected to your dashboard shortly.",
       })
+      setLoginSuccess(true)
     }
   }
 

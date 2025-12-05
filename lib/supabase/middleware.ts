@@ -45,6 +45,8 @@ export async function updateSession(request: NextRequest) {
 
     if (!error && profile) {
       userRole = profile.role
+    } else if (user.user_metadata && user.user_metadata.role) {
+      userRole = user.user_metadata.role
     }
   }
 
@@ -88,4 +90,5 @@ export async function updateSession(request: NextRequest) {
 
   return supabaseResponse
 }
+
 
