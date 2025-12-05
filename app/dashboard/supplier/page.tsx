@@ -9,6 +9,7 @@ import { OrderStatusBadge } from "@/components/dashboard/order-status-badge"
 import { Button } from "@/components/ui/button"
 import { formatPrice } from "@/lib/data"
 import { DollarSign, ShoppingBag, Package, AlertTriangle, ArrowRight, Plus } from "lucide-react"
+import { useUser } from "@/lib/user-context"
 import { Spinner } from "@/components/ui/spinner"
 import { useToast } from "@/components/ui/use-toast"
 
@@ -48,6 +49,7 @@ export default function SupplierDashboardPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const { toast } = useToast()
+  const { profile, supplierProfile, loading: userLoading } = useUser()
 
   useEffect(() => {
     const fetchData = async () => {
@@ -95,7 +97,7 @@ export default function SupplierDashboardPage() {
     fetchData()
   }, [toast])
 
-  if (loading) {
+  if (loading || userLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <Spinner size="lg" />
@@ -115,7 +117,7 @@ export default function SupplierDashboardPage() {
     <div className="flex min-h-screen">
       <DashboardSidebar type="supplier" navItems={[]} />
       <div className="flex-1 lg:pl-64">
-        <DashboardHeader type="supplier" userName="MedSupply Kenya" />
+        <DashboardHeader type="supplier" userName={supplierProfile?.business_name || "Supplier Dashboard"} />
 
         <main className="p-4 lg:p-6">
           {/* Welcome Section */}
