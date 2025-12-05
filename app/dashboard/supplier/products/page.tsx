@@ -70,6 +70,12 @@ const supplierProducts = [
 ]
 
 export default function SupplierProductsPage() {
+  const navItems = [
+    { href: "/dashboard/supplier", label: "Overview", icon: "Home" },
+    { href: "/dashboard/supplier/products", label: "Products", icon: "Package" },
+    { href: "/dashboard/supplier/orders", label: "Orders", icon: "ShoppingCart" },
+  ]
+
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
 
@@ -81,7 +87,7 @@ export default function SupplierProductsPage() {
 
   return (
     <div className="flex min-h-screen">
-      <DashboardSidebar type="supplier" navItems={[]} />
+      <DashboardSidebar userType="supplier" navItems={navItems} />
       <div className="flex-1 lg:pl-64">
         <DashboardHeader type="supplier" userName="MedSupply Kenya" />
 

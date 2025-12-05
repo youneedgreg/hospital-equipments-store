@@ -113,9 +113,15 @@ export default function SupplierDashboardPage() {
     )
   }
 
+  const navItems = [
+    { href: "/dashboard/supplier", label: "Overview", icon: "Home" },
+    { href: "/dashboard/supplier/products", label: "Products", icon: "Package" },
+    { href: "/dashboard/supplier/orders", label: "Orders", icon: "ShoppingCart" },
+  ]
+
   return (
     <div className="flex min-h-screen">
-      <DashboardSidebar type="supplier" navItems={[]} />
+      <DashboardSidebar type="supplier" navItems={navItems} />
       <div className="flex-1 lg:pl-64">
         <DashboardHeader type="supplier" userName={supplierProfile?.business_name || "Supplier Dashboard"} />
 

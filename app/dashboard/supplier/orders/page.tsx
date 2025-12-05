@@ -70,6 +70,12 @@ export default function SupplierOrdersPage() {
         setIsClient(true)
     }, [])
 
+  const navItems = [
+    { href: "/dashboard/supplier", label: "Overview", icon: "Home" },
+    { href: "/dashboard/supplier/products", label: "Products", icon: "Package" },
+    { href: "/dashboard/supplier/orders", label: "Orders", icon: "ShoppingCart" },
+  ]
+
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
   const [selectedOrder, setSelectedOrder] = useState<string | null>(ordersData[0]?.id || null)
@@ -90,7 +96,7 @@ export default function SupplierOrdersPage() {
   if (!isClient) {
     return (
         <div className="flex min-h-screen">
-            <DashboardSidebar type="supplier" navItems={[]} />
+            <DashboardSidebar userType="supplier" navItems={navItems} />
             <div className="flex-1 lg:pl-64">
                 <DashboardHeader type="supplier" userName="MedSupply Kenya" />
                 <main className="p-4 lg:p-6">
@@ -116,7 +122,7 @@ export default function SupplierOrdersPage() {
 
   return (
     <div className="flex min-h-screen">
-      <DashboardSidebar type="supplier" navItems={[]} />
+      <DashboardSidebar userType="supplier" navItems={navItems} />
       <div className="flex-1 lg:pl-64">
         <DashboardHeader type="supplier" userName="MedSupply Kenya" />
 
