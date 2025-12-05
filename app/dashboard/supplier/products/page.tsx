@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { DashboardSidebar } from "@/components/dashboard/dashboard-sidebar"
 import { DashboardHeader } from "@/components/dashboard/dashboard-header"
@@ -11,65 +11,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { formatPrice } from "@/lib/data"
 import { Search, Plus, Edit, MoreHorizontal, Eye, Trash2 } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-
-const supplierProducts = [
-  {
-    id: "1",
-    name: "Electric Hospital Bed - ICU Grade",
-    category: "Hospital Beds",
-    price: 285000,
-    stock: 12,
-    status: "active",
-    image: "/placeholder.svg?key=2j2ml",
-  },
-  {
-    id: "2",
-    name: "Patient Monitor - 6 Parameter",
-    category: "Patient Monitoring",
-    price: 165000,
-    stock: 15,
-    status: "active",
-    image: "/placeholder.svg?key=9yk99",
-  },
-  {
-    id: "3",
-    name: "Surgical Instrument Set - General Surgery",
-    category: "Surgical Instruments",
-    price: 125000,
-    stock: 3,
-    status: "active",
-    image: "/placeholder.svg?key=35fwp",
-  },
-  {
-    id: "4",
-    name: "Wheelchair - Foldable Standard",
-    category: "Mobility Aids",
-    price: 28000,
-    stock: 25,
-    status: "active",
-    image: "/placeholder.svg?key=gu1vl",
-  },
-  {
-    id: "5",
-    name: "Examination Gloves - Nitrile Box 100",
-    category: "PPE & Safety",
-    price: 1800,
-    stock: 800,
-    status: "active",
-    image: "/placeholder.svg?key=dsjfm",
-  },
-  {
-    id: "6",
-    name: "Pulse Oximeter - Fingertip",
-    category: "Diagnostic Tools",
-    price: 3500,
-    stock: 0,
-    status: "inactive",
-    image: "/placeholder.svg?key=qzwji",
-  },
-]
+import { createClient } from "@/lib/supabase/client"
+import { useUser } from "@/lib/user-context"
 
 export default function SupplierProductsPage() {
+  const { supplierProfile, loading: userLoading } = useUser()
   const navItems = [
     { href: "/dashboard/supplier", label: "Overview", icon: "Home" },
     { href: "/dashboard/supplier/products", label: "Products", icon: "Package" },
@@ -78,12 +24,49 @@ export default function SupplierProductsPage() {
 
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
+  const [products, setProducts] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
-  const filteredProducts = supplierProducts.filter((product) => {
+  useEffect(() => {
+    const fetchProducts = async () => {
+      if (!supplierProfile?.id) {
+        setLoading(false)
+        return
+      }
+
+      const supabase = createClient()
+      const supplierId = supplierProfile.id
+
+      let { data, error } = await supabase
+        .from("products")
+        .select("*, categories(name)")
+        .eq("supplier_id", supplierId)
+
+      if (error) {
+        setError(error.message)
+        setLoading(false)
+        console.error("Error fetching products:", error)
+        return
+      }
+      
+      setProducts(data || [])
+      setLoading(false)
+    }
+
+    if (!userLoading) {
+      fetchProducts()
+    }
+  }, [supplierProfile, userLoading])
+
+  const filteredProducts = products.filter((product) => {
     const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase())
-    const matchesStatus = statusFilter === "all" || product.status === statusFilter
+    const matchesStatus = statusFilter === "all" || String(product.status) === statusFilter
     return matchesSearch && matchesStatus
   })
+
+  if (userLoading || loading) return <p>Loading products...</p>
+  if (error) return <p>Error: {error}</p>
 
   return (
     <div className="flex min-h-screen">
@@ -149,7 +132,7 @@ export default function SupplierProductsPage() {
                         <div className="flex items-center gap-3">
                           <div className="h-12 w-12 rounded-lg overflow-hidden bg-muted shrink-0">
                             <img
-                              src={product.image || "/placeholder.svg"}
+                              src={product.image_url || "/placeholder.svg"}
                               alt={product.name}
                               className="h-full w-full object-cover"
                             />
@@ -157,19 +140,19 @@ export default function SupplierProductsPage() {
                           <span className="font-medium line-clamp-1">{product.name}</span>
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-sm text-muted-foreground">{product.category}</td>
+                      <td className="px-4 py-3 text-sm text-muted-foreground">{product.categories?.name}</td>
                       <td className="px-4 py-3 font-medium">{formatPrice(product.price)}</td>
                       <td className="px-4 py-3">
                         <span
                           className={
-                            product.stock === 0
+                            product.stock_count === 0
                               ? "text-destructive font-medium"
-                              : product.stock < 10
+                              : product.stock_count < 10
                                 ? "text-chart-4 font-medium"
                                 : ""
                           }
                         >
-                          {product.stock}
+                          {product.stock_count}
                         </span>
                       </td>
                       <td className="px-4 py-3">
