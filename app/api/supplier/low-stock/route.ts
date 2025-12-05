@@ -1,18 +1,23 @@
-import { createServerClient } from "@supabase/ssr"
+import { createServerClient, type CookieOptions } from "@supabase/ssr"
 import { cookies } from "next/headers"
 import { NextRequest, NextResponse } from "next/server"
 
 export async function GET(req: NextRequest) {
+  const cookieStore = await cookies()
+
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        getAll() {
-          return cookies().getAll()
+        get(name: string) {
+          return cookieStore.get(name)?.value
         },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) => cookies().set(name, value, options))
+        set(name: string, value: string, options: CookieOptions) {
+          cookieStore.set(name, value, options)
+        },
+        remove(name: string, options: CookieOptions) {
+          cookieStore.delete(name, options)
         },
       },
     }
@@ -37,7 +42,7 @@ export async function GET(req: NextRequest) {
 
   const { data: products, error: productsError } = await supabase
     .from("products")
-    .select("name, stock_count, low_stock_threshold")
+    .select("name, stock_count")
     .eq("supplier_id", user.id)
     .lt("stock_count", 5) // Assuming a low stock threshold of 5 for now
     .order("stock_count", { ascending: true })
@@ -47,5 +52,11 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Error fetching low stock products" }, { status: 500 })
   }
 
-  return NextResponse.json({ products }, { status: 200 })
+  // Add the low_stock_threshold to each product as it's not a database column
+  const productsWithThreshold = products.map((product) => ({
+    ...product,
+    low_stock_threshold: 5, // Hardcoded value as per frontend expectation
+  }))
+
+  return NextResponse.json({ products: productsWithThreshold }, { status: 200 })
 }
