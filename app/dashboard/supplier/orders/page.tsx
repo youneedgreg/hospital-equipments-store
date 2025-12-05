@@ -10,65 +10,87 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { formatPrice } from "@/lib/data"
 import { Search, Check, Truck, Package } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
+import { createClient } from "@/lib/supabase/client"
+import { useUser } from "@/lib/user-context"
 
-const ordersData = [
-  {
-    id: "BIO-12345678",
-    buyer: "Nairobi Regional Hospital",
-    buyerEmail: "procurement@nairobihospital.co.ke",
-    items: [{ name: "Electric Hospital Bed - ICU Grade", quantity: 2, price: 570000 }],
-    total: 570000,
-    date: "Nov 20, 2025",
-    status: "pending" as const,
-    paymentStatus: "paid" as const,
-  },
-  {
-    id: "BIO-12345677",
-    buyer: "HealthFirst Clinics",
-    buyerEmail: "orders@healthfirst.co.ke",
-    items: [{ name: "N95 Respirator Masks - Box of 50", quantity: 20, price: 90000 }],
-    total: 90000,
-    date: "Nov 19, 2025",
-    status: "confirmed" as const,
-    paymentStatus: "paid" as const,
-  },
-  {
-    id: "BIO-12345676",
-    buyer: "Mombasa Medical Center",
-    buyerEmail: "supplies@mombasamedical.co.ke",
-    items: [{ name: "Patient Monitor - 6 Parameter", quantity: 3, price: 495000 }],
-    total: 495000,
-    date: "Nov 18, 2025",
-    status: "shipped" as const,
-    paymentStatus: "paid" as const,
-  },
-  {
-    id: "BIO-12345675",
-    buyer: "Kenya Red Cross",
-    buyerEmail: "logistics@redcross.or.ke",
-    items: [{ name: "Wheelchair - Foldable Standard", quantity: 10, price: 280000 }],
-    total: 280000,
-    date: "Nov 17, 2025",
-    status: "delivered" as const,
-    paymentStatus: "paid" as const,
-  },
-  {
-    id: "BIO-12345674",
-    buyer: "Eldoret Teaching Hospital",
-    buyerEmail: "procurement@eldorethospital.co.ke",
-    items: [{ name: "Surgical Instrument Set - General Surgery", quantity: 2, price: 250000 }],
-    total: 250000,
-    date: "Nov 16, 2025",
-    status: "pending" as const,
-    paymentStatus: "pending" as const,
-  },
-]
+// Define interfaces for the fetched data
+interface OrderItem {
+  id: string;
+  quantity: number;
+  price: number;
+  products: { // Nested product data from join
+    name: string;
+  } | null;
+}
+
+interface Order {
+  id: string;
+  order_number: string;
+  total_amount: number;
+  status: "pending" | "processing" | "shipped" | "delivered" | "cancelled";
+  payment_status: "pending" | "paid" | "failed" | "refunded";
+  created_at: string; // Date string
+  profiles: { // Nested profile data for buyer
+    full_name: string;
+    email: string;
+  } | null;
+  order_items: OrderItem[]; // Array of order items
+}
+
 
 export default function SupplierOrdersPage() {
+    const { supplierProfile, loading: userLoading } = useUser()
     const [isClient, setIsClient] = useState(false)
+    const [orders, setOrders] = useState<Order[]>([])
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState<string | null>(null)
+
     useEffect(() => {
         setIsClient(true)
     }, [])
+
+    useEffect(() => {
+        const fetchOrders = async () => {
+            if (!supplierProfile?.id) {
+                setLoading(false)
+                return
+            }
+
+            const supabase = createClient()
+            const supplierId = supplierProfile.id
+
+            let { data, error } = await supabase
+                .from("orders")
+                .select(
+                    `
+                    id,
+                    order_number,
+                    total_amount,
+                    status,
+                    payment_status,
+                    created_at,
+                    profiles (full_name, email),
+                    order_items (id, quantity, price, products (name))
+                    `
+                )
+                .eq("supplier_id", supplierId)
+                .order("created_at", { ascending: false })
+
+            if (error) {
+                setError(error.message)
+                setLoading(false)
+                console.error("Error fetching orders:", error)
+                return
+            }
+
+            setOrders(data as Order[] || [])
+            setLoading(false)
+        }
+
+        if (!userLoading) {
+            fetchOrders()
+        }
+    }, [supplierProfile, userLoading])
 
   const navItems = [
     { href: "/dashboard/supplier", label: "Overview", icon: "Home" },
@@ -78,22 +100,29 @@ export default function SupplierOrdersPage() {
 
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
-  const [selectedOrder, setSelectedOrder] = useState<string | null>(ordersData[0]?.id || null)
+  const [selectedOrder, setSelectedOrder] = useState<string | null>(null)
 
-  const filteredOrders = ordersData.filter((order) => {
-    if (!order || !order.id || !order.buyer) {
+    useEffect(() => {
+        if (orders.length > 0 && selectedOrder === null) {
+            setSelectedOrder(orders[0].id)
+        }
+    }, [orders, selectedOrder])
+
+
+  const filteredOrders = orders.filter((order) => {
+    if (!order || !order.order_number || !order.profiles?.full_name) {
         return false;
     }
     const matchesSearch =
-      order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      order.buyer.toLowerCase().includes(searchQuery.toLowerCase())
+      order.order_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      order.profiles.full_name.toLowerCase().includes(searchQuery.toLowerCase())
     const matchesStatus = statusFilter === "all" || order.status === statusFilter
     return matchesSearch && matchesStatus
   })
 
-  const orderDetails = selectedOrder ? ordersData.find((o) => o.id === selectedOrder) : null
+  const orderDetails = selectedOrder ? orders.find((o) => o.id === selectedOrder) : null
 
-  if (!isClient) {
+  if (userLoading || loading) {
     return (
         <div className="flex min-h-screen">
             <DashboardSidebar userType="supplier" navItems={navItems} />
@@ -119,6 +148,8 @@ export default function SupplierOrdersPage() {
         </div>
     )
   }
+
+  if (error) return <p className="text-destructive">Error: {error}</p>
 
   return (
     <div className="flex min-h-screen">
@@ -179,11 +210,11 @@ export default function SupplierOrdersPage() {
                           onClick={() => setSelectedOrder(order.id)}
                         >
                           <td className="px-4 py-3">
-                            <p className="font-medium">{order.id}</p>
-                            <p className="text-sm text-muted-foreground">{order.date}</p>
+                            <p className="font-medium">{order.order_number}</p>
+                            <p className="text-sm text-muted-foreground">{new Date(order.created_at).toLocaleDateString()}</p>
                           </td>
-                          <td className="px-4 py-3 text-sm">{order.buyer}</td>
-                          <td className="px-4 py-3 font-medium">{formatPrice(order.total)}</td>
+                          <td className="px-4 py-3 text-sm">{order.profiles?.full_name || "N/A"}</td>
+                          <td className="px-4 py-3 font-medium">{formatPrice(order.total_amount)}</td>
                           <td className="px-4 py-3">
                             <OrderStatusBadge status={order.status} />
                           </td>
@@ -210,21 +241,21 @@ export default function SupplierOrdersPage() {
                   <div className="space-y-4">
                     <div>
                       <p className="text-sm text-muted-foreground">Order ID</p>
-                      <p className="font-medium">{orderDetails.id}</p>
+                      <p className="font-medium">{orderDetails.order_number}</p>
                     </div>
                     <div>
                       <p className="text-sm text-muted-foreground">Buyer</p>
-                      <p className="font-medium">{orderDetails.buyer}</p>
-                      <p className="text-sm text-muted-foreground">{orderDetails.buyerEmail}</p>
+                      <p className="font-medium">{orderDetails.profiles?.full_name || "N/A"}</p>
+                      <p className="text-sm text-muted-foreground">{orderDetails.profiles?.email || "N/A"}</p>
                     </div>
                     <div>
                       <p className="text-sm text-muted-foreground">Date</p>
-                      <p className="font-medium">{orderDetails.date}</p>
+                      <p className="font-medium">{new Date(orderDetails.created_at).toLocaleDateString()}</p>
                     </div>
                     <div>
                       <p className="text-sm text-muted-foreground">Status</p>
                       <div className="flex gap-2 mt-1">
-                        <OrderStatusBadge status={orderDetails.paymentStatus} type="payment" />
+                        <OrderStatusBadge status={orderDetails.payment_status} type="payment" />
                         <OrderStatusBadge status={orderDetails.status} type="order" />
                       </div>
                     </div>
@@ -232,12 +263,12 @@ export default function SupplierOrdersPage() {
                     <div className="border-t pt-4">
                       <p className="text-sm font-medium mb-2">Items</p>
                       <div className="space-y-2">
-                        {orderDetails.items.map((item, index) => (
-                          <div key={index} className="flex justify-between text-sm">
+                        {orderDetails.order_items.map((item, index) => (
+                          <div key={item.id || index} className="flex justify-between text-sm">
                             <span className="text-muted-foreground">
-                              {item.name} × {item.quantity}
+                              {item.products?.name || "Unknown Product"} × {item.quantity}
                             </span>
-                            <span>{formatPrice(item.price)}</span>
+                            <span>{formatPrice(item.price * item.quantity)}</span>
                           </div>
                         ))}
                       </div>
@@ -245,7 +276,7 @@ export default function SupplierOrdersPage() {
 
                     <div className="border-t pt-4 flex justify-between">
                       <span className="font-semibold">Total</span>
-                      <span className="font-semibold">{formatPrice(orderDetails.total)}</span>
+                      <span className="font-semibold">{formatPrice(orderDetails.total_amount)}</span>
                     </div>
                   </div>
 

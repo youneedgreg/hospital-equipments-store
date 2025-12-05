@@ -12,23 +12,24 @@ import { DollarSign, ShoppingBag, Package, AlertTriangle, ArrowRight, Plus } fro
 import { useUser } from "@/lib/user-context"
 import { Spinner } from "@/components/ui/spinner"
 import { useToast } from "@/components/ui/use-toast"
+import { createClient } from "@/lib/supabase/client"
 
 interface OrderItem {
   quantity: number
   products: {
     name: string
-  }
+  } | null
 }
 
 interface Order {
   id: string
   created_at: string
-  status: "pending" | "confirmed" | "shipped" | "delivered" | "cancelled"
+  status: "pending" | "processing" | "shipped" | "delivered" | "cancelled"
   total_amount: number
   order_items: OrderItem[]
   profiles: {
     full_name: string
-  }
+  } | null
 }
 
 interface LowStockProduct {
@@ -53,40 +54,82 @@ export default function SupplierDashboardPage() {
 
   useEffect(() => {
     const fetchData = async () => {
+      if (userLoading || !supplierProfile?.id) {
+        return
+      }
+
+      setLoading(true)
+      setError(null)
+
+      const supabase = createClient()
+      const supplierId = supplierProfile.id
+
       try {
-        const [ordersResponse, lowStockResponse, statsResponse] = await Promise.all([
-          fetch("/api/supplier/orders"),
-          fetch("/api/supplier/low-stock"),
-          fetch("/api/supplier/stats"),
-        ])
+        // Fetch Orders
+        const { data: ordersData, error: ordersError } = await supabase
+          .from("orders")
+          .select(
+            `
+            id,
+            created_at,
+            status,
+            total_amount,
+            order_items (quantity, products (name)),
+            profiles (full_name)
+            `
+          )
+          .eq("supplier_id", supplierId)
+          .order("created_at", { ascending: false })
+          .limit(5)
 
-        if (!ordersResponse.ok) {
-          const errorData = await ordersResponse.json()
-          throw new Error(errorData.error || "Failed to fetch orders")
-        }
+        if (ordersError) throw ordersError
+        setOrders(ordersData || [])
 
-        if (!lowStockResponse.ok) {
-          const errorData = await lowStockResponse.json()
-          throw new Error(errorData.error || "Failed to fetch low stock products")
-        }
+        // Fetch Low Stock Products
+        const LOW_STOCK_THRESHOLD = 10
+        const { data: lowStockData, error: lowStockError } = await supabase
+          .from("products")
+          .select(`name, stock_count`)
+          .eq("supplier_id", supplierId)
+          .lt("stock_count", LOW_STOCK_THRESHOLD)
+          .order("stock_count", { ascending: true })
 
-        if (!statsResponse.ok) {
-          const errorData = await statsResponse.json()
-          throw new Error(errorData.error || "Failed to fetch stats")
-        }
+        if (lowStockError) throw lowStockError
+        const lowStockProductsWithThreshold = lowStockData?.map(p => ({ ...p, low_stock_threshold: LOW_STOCK_THRESHOLD })) || []
+        setLowStockProducts(lowStockProductsWithThreshold)
 
-        const ordersData = await ordersResponse.json()
-        const lowStockData = await lowStockResponse.json()
-        const statsData = await statsResponse.json()
+        // Fetch Stats
+        // Active Products
+        const { count: activeProductsCount, error: activeProductsError } = await supabase
+          .from("products")
+          .select("id", { count: "exact" })
+          .eq("supplier_id", supplierId)
+          .eq("in_stock", true)
 
-        setOrders(ordersData.orders)
-        setLowStockProducts(lowStockData.products)
-        setStats(statsData)
+        if (activeProductsError) throw activeProductsError
+
+        // Total Sales (sum of total_amount for delivered/paid orders)
+        const { data: totalSalesData, error: totalSalesError } = await supabase
+          .from("orders")
+          .select("total_amount")
+          .eq("supplier_id", supplierId)
+          .in("payment_status", ["paid", "refunded"])
+          .in("status", ["delivered", "shipped"])
+
+        if (totalSalesError) throw totalSalesError
+
+        const totalSales = totalSalesData?.reduce((sum, order) => sum + parseFloat(order.total_amount as any), 0) || 0
+        
+        setStats({
+          activeProducts: activeProductsCount || 0,
+          totalSales: totalSales,
+        })
+
       } catch (err: any) {
         setError(err.message)
         toast({
           title: "Error",
-          description: err.message,
+          description: `Failed to fetch dashboard data: ${err.message}`,
           variant: "destructive",
         })
       } finally {
@@ -94,8 +137,10 @@ export default function SupplierDashboardPage() {
       }
     }
 
-    fetchData()
-  }, [toast])
+    if (!userLoading && supplierProfile?.id) {
+      fetchData()
+    }
+  }, [userLoading, supplierProfile?.id])
 
   if (loading || userLoading) {
     return (
@@ -200,29 +245,35 @@ export default function SupplierDashboardPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {orders.map((order) => (
-                      <tr key={order.id} className="border-b last:border-0">
-                        <td className="px-4 py-3">
-                          <p className="font-medium">{order.id}</p>
-                          <p className="text-sm text-muted-foreground">{new Date(order.created_at).toLocaleDateString()}</p>
-                        </td>
-                        <td className="px-4 py-3">
-                          <p className="text-sm">{order.profiles.full_name}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {order.order_items[0].products.name} × {order.order_items[0].quantity}
-                          </p>
-                        </td>
-                        <td className="px-4 py-3 font-medium">{formatPrice(order.total_amount)}</td>
-                        <td className="px-4 py-3">
-                          <OrderStatusBadge status={order.status} />
-                        </td>
-                        <td className="px-4 py-3 text-right">
-                          <Button variant="ghost" size="sm">
-                            Manage
-                          </Button>
-                        </td>
+                    {orders.length > 0 ? (
+                      orders.map((order) => (
+                        <tr key={order.id} className="border-b last:border-0">
+                          <td className="px-4 py-3">
+                            <p className="font-medium">{order.id}</p>
+                            <p className="text-sm text-muted-foreground">{new Date(order.created_at).toLocaleDateString()}</p>
+                          </td>
+                          <td className="px-4 py-3">
+                            <p className="text-sm">{order.profiles?.full_name || "N/A"}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {order.order_items[0]?.products?.name || "N/A"} × {order.order_items[0]?.quantity || 0}
+                            </p>
+                          </td>
+                          <td className="px-4 py-3 font-medium">{formatPrice(order.total_amount)}</td>
+                          <td className="px-4 py-3">
+                            <OrderStatusBadge status={order.status} />
+                          </td>
+                          <td className="px-4 py-3 text-right">
+                            <Button variant="ghost" size="sm">
+                              Manage
+                            </Button>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={5} className="p-8 text-center text-muted-foreground">No recent orders found.</td>
                       </tr>
-                    ))}
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -237,20 +288,24 @@ export default function SupplierDashboardPage() {
                 </Link>
               </div>
               <div className="p-4 space-y-4">
-                {lowStockProducts.map((product, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-destructive/10">
-                    <div>
-                      <p className="font-medium text-sm">{product.name}</p>
-                      <p className="text-xs text-muted-foreground">Threshold: {product.low_stock_threshold} units</p>
+                {lowStockProducts.length > 0 ? (
+                  lowStockProducts.map((product, index) => (
+                    <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-destructive/10">
+                      <div>
+                        <p className="font-medium text-sm">{product.name}</p>
+                        <p className="text-xs text-muted-foreground">Threshold: {product.low_stock_threshold} units</p>
+                      </div>
+                      <div className="text-right">
+                        <p className={`text-lg font-bold ${product.stock_count === 0 ? "text-destructive" : "text-chart-4"}`}>
+                          {product.stock_count}
+                        </p>
+                        <p className="text-xs text-muted-foreground">in stock</p>
+                      </div>
                     </div>
-                    <div className="text-right">
-                      <p className={`text-lg font-bold ${product.stock_count === 0 ? "text-destructive" : "text-chart-4"}`}>
-                        {product.stock_count}
-                      </p>
-                      <p className="text-xs text-muted-foreground">in stock</p>
-                    </div>
-                  </div>
-                ))}
+                  ))
+                ) : (
+                  <div className="p-8 text-center text-muted-foreground">No low stock products.</div>
+                )}
                 <Button variant="outline" className="w-full bg-transparent">
                   Update Inventory
                 </Button>
