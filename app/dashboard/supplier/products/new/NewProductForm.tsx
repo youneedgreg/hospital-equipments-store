@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Upload, Loader2, X } from "lucide-react"
+import { useToast } from "@/hooks/use-toast" // Import useToast
 
 interface Category {
   id: string
@@ -44,7 +45,8 @@ export default function NewProductForm({ categories, supplier }: NewProductFormP
   const [weight, setWeight] = useState("")
   const [material, setMaterial] = useState("")
   const [warranty, setWarranty] = useState("")
-  const [featuresInput, setFeaturesInput] = useState("") // New state for features
+  const [featuresInput, setFeaturesInput] = useState("")
+  const { toast } = useToast() // Initialize useToast
 
   const handleCategoryChange = (value: string) => {
     setCategory(value)
@@ -68,7 +70,7 @@ export default function NewProductForm({ categories, supplier }: NewProductFormP
       weight,
       material,
       warranty,
-      features: featuresArray, // Include features in productData
+      features: featuresArray,
     }
 
     try {
@@ -81,13 +83,23 @@ export default function NewProductForm({ categories, supplier }: NewProductFormP
       })
 
       if (!response.ok) {
-        throw new Error("Failed to create product")
+        const errorData = await response.json()
+        throw new Error(errorData.error || "Failed to create product")
       }
 
+      toast({
+        title: "Product created successfully!",
+        description: "Your product has been added to the marketplace.",
+        variant: "default",
+      })
       router.push("/dashboard/supplier/products")
-    } catch (error) {
+    } catch (error: any) {
       console.error(error)
-      // Handle error state here, e.g., show a toast notification
+      toast({
+        title: "Error creating product",
+        description: error.message || "Something went wrong. Please try again.",
+        variant: "destructive",
+      })
     } finally {
       setIsLoading(false)
     }
@@ -156,15 +168,7 @@ export default function NewProductForm({ categories, supplier }: NewProductFormP
                   </SelectContent>
                 </Select>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="sku">SKU (Optional)</Label>
-                <Input
-                  id="sku"
-                  placeholder="e.g., BED-ICU-001"
-                  value={sku}
-                  onChange={(e) => setSku(e.target.value)}
-                />
-              </div>
+              
               <div className="space-y-2 sm:col-span-2">
                 <Label htmlFor="description">Description *</Label>
                 <Textarea
