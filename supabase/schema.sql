@@ -262,14 +262,17 @@ CREATE TRIGGER update_orders_updated_at BEFORE UPDATE ON public.orders
 
 -- Insert default categories
 INSERT INTO public.categories (id, name, description) VALUES
-  ('hospital-beds', 'Hospital Beds', 'ICU and standard hospital beds'),
-  ('ppe-safety', 'PPE & Safety', 'Personal protective equipment and safety gear'),
-  ('diagnostic-tools', 'Diagnostic Tools', 'Medical diagnostic instruments'),
-  ('surgical-instruments', 'Surgical Instruments', 'Surgical tools and equipment'),
+  ('diagnostic-devices', 'Diagnostic Devices', 'Devices used for medical diagnosis'),
+  ('therapeutic-surgical-devices', 'Therapeutic & Surgical Devices', 'Devices used in treatment and surgical procedures'),
+  ('implantable-devices', 'Implantable Devices', 'Devices implanted inside the body'),
+  ('life-support-critical-care', 'Life Support & Critical Care Devices', 'Devices for intensive care and life support'),
+  ('disposables-consumables', 'Disposables & Consumables', 'Single-use medical supplies'),
+  ('rehabilitation-assistive', 'Rehabilitation & Assistive Devices', 'Rehab, mobility, and assistive equipment'),
+  ('hospital-furniture-infrastructure', 'Hospital Furniture & Infrastructure', 'Hospital beds, trolleys, and medical infrastructure'),
+  ('sterilization-infection-control', 'Sterilization & Infection Control', 'Devices for sterilization and preventing infection'),
+  ('dental-equipment', 'Dental Equipment', 'Devices and tools for dental care'),
   ('laboratory-equipment', 'Laboratory Equipment', 'Lab instruments and devices'),
-  ('consumables', 'Consumables', 'Medical consumables and supplies'),
-  ('mobility-aids', 'Mobility Aids', 'Wheelchairs and mobility equipment'),
-  ('patient-monitoring', 'Patient Monitoring', 'Patient monitoring systems')
+  ('homecare-telehealth', 'Home Care & Telehealth Devices', 'Devices for remote health and home care monitoring')
 ON CONFLICT (id) DO NOTHING;
 
 
