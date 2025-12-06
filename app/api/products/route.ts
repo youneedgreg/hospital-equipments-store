@@ -27,19 +27,19 @@ export async function POST(request: Request) {
   const {
     name,
     description,
-    category,
+    category_id,
     sku,
     price,
-    originalPrice,
-    stock,
-    images,
+    original_price,
+    stock_count,
+    image_url,
     dimensions,
     weight,
     material,
     warranty,
   } = await request.json()
 
-  if (!name || !description || !category || !price || !stock) {
+  if (!name || !description || !category_id || !price || !stock_count) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
   }
 
@@ -49,12 +49,11 @@ export async function POST(request: Request) {
       {
         name,
         description,
-        category_id: category,
-        sku,
+        category_id: category_id,
         price,
-        original_price: originalPrice,
-        stock_count: stock,
-        image_url: images.length > 0 ? images[0] : null,
+        original_price: original_price,
+        stock_count: stock_count,
+        image_url: image_url,
         supplier_id: supplier.id,
         specifications: {
           dimensions,

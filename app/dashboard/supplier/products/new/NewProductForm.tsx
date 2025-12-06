@@ -3,7 +3,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -31,6 +31,7 @@ interface NewProductFormProps {
 
 export default function NewProductForm({ categories, supplier }: NewProductFormProps) {
   const router = useRouter()
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [images, setImages] = useState<string[]>([])
   const [name, setName] = useState("")
@@ -90,9 +91,24 @@ export default function NewProductForm({ categories, supplier }: NewProductFormP
     }
   }
 
-  const addPlaceholderImage = () => {
-    if (images.length < 5) {
-      setImages([...images, `/placeholder.svg?key=${images.length}`])
+  const handleImageUploadClick = () => {
+    fileInputRef.current?.click()
+  }
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files
+    if (files) {
+      const newImages: string[] = []
+      for (let i = 0; i < files.length && images.length + newImages.length < 5; i++) {
+        const file = files[i]
+        const reader = new FileReader()
+        reader.onload = (e) => {
+          if (e.target?.result) {
+            setImages((prevImages) => [...prevImages, e.target!.result as string])
+          }
+        }
+        reader.readAsDataURL(file)
+      }
     }
   }
 
@@ -224,7 +240,7 @@ export default function NewProductForm({ categories, supplier }: NewProductFormP
               {images.length < 5 && (
                 <button
                   type="button"
-                  onClick={addPlaceholderImage}
+                  onClick={handleImageUploadClick}
                   className="aspect-square rounded-lg border-2 border-dashed border-border flex flex-col items-center justify-center hover:border-primary/50 transition-colors"
                 >
                   <Upload className="h-6 w-6 text-muted-foreground mb-1" />
@@ -235,6 +251,14 @@ export default function NewProductForm({ categories, supplier }: NewProductFormP
             <p className="text-sm text-muted-foreground mt-2">
               Upload up to 5 images. First image will be the main image.
             </p>
+            <input
+              type="file"
+              ref={fileInputRef}
+              className="hidden"
+              multiple
+              accept="image/*"
+              onChange={handleFileChange}
+            />
           </div>
 
           {/* Specifications */}
