@@ -37,7 +37,6 @@ export default function NewProductForm({ categories, supplier }: NewProductFormP
   const [name, setName] = useState("")
   const [description, setDescription] = useState("")
   const [category, setCategory] = useState("")
-  const [sku, setSku] = useState("")
   const [price, setPrice] = useState("")
   const [originalPrice, setOriginalPrice] = useState("")
   const [stock, setStock] = useState("")
@@ -45,6 +44,7 @@ export default function NewProductForm({ categories, supplier }: NewProductFormP
   const [weight, setWeight] = useState("")
   const [material, setMaterial] = useState("")
   const [warranty, setWarranty] = useState("")
+  const [featuresInput, setFeaturesInput] = useState("") // New state for features
 
   const handleCategoryChange = (value: string) => {
     setCategory(value)
@@ -54,11 +54,12 @@ export default function NewProductForm({ categories, supplier }: NewProductFormP
     e.preventDefault()
     setIsLoading(true)
 
+    const featuresArray = featuresInput.split(',').map(feature => feature.trim()).filter(feature => feature.length > 0)
+
     const productData = {
       name,
       description,
       category_id: category,
-      sku,
       price: parseFloat(price),
       original_price: originalPrice ? parseFloat(originalPrice) : undefined,
       stock_count: parseInt(stock, 10),
@@ -67,6 +68,7 @@ export default function NewProductForm({ categories, supplier }: NewProductFormP
       weight,
       material,
       warranty,
+      features: featuresArray, // Include features in productData
     }
 
     try {
@@ -301,6 +303,22 @@ export default function NewProductForm({ categories, supplier }: NewProductFormP
                   onChange={(e) => setWarranty(e.target.value)}
                 />
               </div>
+            </div>
+          </div>
+
+          {/* Features */}
+          <div>
+            <h2 className="text-lg font-semibold mb-4">Features (Optional)</h2>
+            <div className="space-y-2">
+              <Label htmlFor="features">Features</Label>
+              <Textarea
+                id="features"
+                placeholder="e.g., Waterproof, Shockproof, Portable"
+                rows={3}
+                value={featuresInput}
+                onChange={(e) => setFeaturesInput(e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground">Separate features with commas</p>
             </div>
           </div>
 

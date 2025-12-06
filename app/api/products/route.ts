@@ -28,7 +28,6 @@ export async function POST(request: Request) {
     name,
     description,
     category_id,
-    sku,
     price,
     original_price,
     stock_count,
@@ -37,6 +36,7 @@ export async function POST(request: Request) {
     weight,
     material,
     warranty,
+    features,
   } = await request.json()
 
   if (!name || !description || !category_id || !price || !stock_count) {
@@ -61,6 +61,7 @@ export async function POST(request: Request) {
           material,
           warranty,
         },
+        features: features,
       },
     ])
     .select()
