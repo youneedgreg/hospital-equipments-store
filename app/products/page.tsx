@@ -1,13 +1,13 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
+import { getProducts, Product } from "@/lib/supabase/queries"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { ProductCard } from "@/components/products/product-card"
 import { ProductFilters } from "@/components/products/product-filters"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { products } from "@/lib/data"
 import { Search } from "lucide-react"
 
 type SortOption = "newest" | "price-low" | "price-high" | "popular" | "rating"
@@ -19,6 +19,27 @@ export default function ProductsPage() {
   const [selectedSuppliers, setSelectedSuppliers] = useState<string[]>([])
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 300000])
   const [inStockOnly, setInStockOnly] = useState(false)
+
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+        const fetchedProducts = await getProducts();
+        setProducts(fetchedProducts);
+      } catch (err) {
+        setError("Failed to fetch products.");
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
 
   const filteredProducts = useMemo(() => {
     let result = [...products]
@@ -50,7 +71,7 @@ export default function ProductsPage() {
 
     // Stock filter
     if (inStockOnly) {
-      result = result.filter((p) => p.inStock)
+      result = result.filter((p) => p.in_stock)
     }
 
     // Sorting
@@ -73,7 +94,7 @@ export default function ProductsPage() {
     }
 
     return result
-  }, [searchQuery, sortBy, selectedCategories, selectedSuppliers, priceRange, inStockOnly])
+  }, [searchQuery, sortBy, selectedCategories, selectedSuppliers, priceRange, inStockOnly, products])
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -140,21 +161,36 @@ export default function ProductsPage() {
 
             {/* Product Grid */}
             <div className="flex-1">
-              <p className="text-sm text-muted-foreground mb-4">
-                Showing {filteredProducts.length} product{filteredProducts.length !== 1 ? "s" : ""}
-              </p>
-
-              {filteredProducts.length > 0 ? (
-                <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
-                  {filteredProducts.map((product) => (
-                    <ProductCard key={product.id} product={product} />
-                  ))}
-                </div>
-              ) : (
+              {loading && (
                 <div className="text-center py-16">
-                  <p className="text-lg font-medium">No products found</p>
-                  <p className="text-muted-foreground mt-1">Try adjusting your search or filter criteria</p>
+                  <p className="text-lg font-medium">Loading products...</p>
                 </div>
+              )}
+              {error && (
+                <div className="text-center py-16 text-red-500">
+                  <p className="text-lg font-medium">Error: {error}</p>
+                  <p className="text-muted-foreground mt-1">Please try again later.</p>
+                </div>
+              )}
+              {!loading && !error && (
+                <>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Showing {filteredProducts.length} product{filteredProducts.length !== 1 ? "s" : ""}
+                  </p>
+
+                  {filteredProducts.length > 0 ? (
+                    <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+                      {filteredProducts.map((product) => (
+                        <ProductCard key={product.id} product={product} />
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-16">
+                      <p className="text-lg font-medium">No products found</p>
+                      <p className="text-muted-foreground mt-1">Try adjusting your search or filter criteria</p>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           </div>

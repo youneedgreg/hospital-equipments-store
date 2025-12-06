@@ -1,24 +1,35 @@
-"use client"
-
-import { useState } from "react"
-import { useParams, useRouter } from "next/navigation"
 import Link from "next/link"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { getProductById, formatPrice, products, mapProductToLegacy, LegacyProduct } from "@/lib/data"
+
+import { formatPrice } from "@/lib/data"
+import { Product, getProducts, getProductById } from "@/lib/supabase/queries"
 import { ProductCard } from "@/components/products/product-card"
 import { Star, ShoppingCart, Minus, Plus, Truck, Shield, MessageCircle, ChevronLeft, Check } from "lucide-react"
 
-export default function ProductDetailPage() {
-  const params = useParams()
-  const router = useRouter()
-  const [quantity, setQuantity] = useState(1)
-
-  const productData = getProductById(params.id as string)
-  const product = productData ? mapProductToLegacy(productData) : undefined
+export default async function ProductDetailPage({ params }: { params: { id: string } }) {
+  const resolvedParams = await params;
+  if (typeof resolvedParams.id !== 'string') {
+    return (
+      <div className="flex min-h-screen flex-col">
+        <Header />
+        <main className="flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold">Product not found</h1>
+            <p className="text-muted-foreground mt-2">Invalid product ID provided.</p>
+            <Button className="mt-4">
+              Browse Products
+            </Button>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+  const product = await getProductById(resolvedParams.id)
 
   if (!product) {
     return (
@@ -28,7 +39,8 @@ export default function ProductDetailPage() {
           <div className="text-center">
             <h1 className="text-2xl font-bold">Product not found</h1>
             <p className="text-muted-foreground mt-2">The product you're looking for doesn't exist.</p>
-            <Button className="mt-4" onClick={() => router.push("/products")}>
+            {/* The button below should be a client component or use a different approach */}
+            <Button className="mt-4">
               Browse Products
             </Button>
           </div>
@@ -38,7 +50,8 @@ export default function ProductDetailPage() {
     )
   }
 
-  const relatedProducts = products.filter((p) => p.category === product.category && p.id !== product.id).slice(0, 4)
+  // Related products logic (to be re-evaluated later if needed)
+  // const relatedProducts = products.filter((p) => p.category === product.category && p.id !== product.id).slice(0, 4)
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -60,30 +73,29 @@ export default function ProductDetailPage() {
             {/* Product Image */}
             <div className="relative aspect-square overflow-hidden rounded-2xl bg-muted">
               <img
-                src={product.image || "/placeholder.svg"}
+                src={product.image_url || "/placeholder.svg"}
                 alt={product.name}
                 className="h-full w-full object-cover"
               />
-              {!product.inStock && (
+              {!product.in_stock && (
                 <div className="absolute inset-0 flex items-center justify-center bg-background/80">
                   <Badge variant="secondary" className="text-lg py-2 px-4">
                     Out of Stock
                   </Badge>
                 </div>
               )}
-              {product.originalPrice && product.inStock && (
+              {product.original_price && product.in_stock && (
                 <Badge className="absolute top-4 left-4 bg-destructive text-destructive-foreground text-sm py-1 px-3">
-                  {Math.round((1 - product.price / product.originalPrice) * 100)}% Off
+                  {Math.round((1 - product.price / product.original_price) * 100)}% Off
                 </Badge>
               )}
             </div>
 
             {/* Product Details */}
             <div>
-              <Badge variant="outline" className="mb-3">
-                {product.category}
-              </Badge>
-              <h1 className="text-3xl font-bold tracking-tight">{product.name}</h1>
+                          <Badge variant="outline" className="mb-3">
+                              {product.categories?.name}
+                          </Badge>              <h1 className="text-3xl font-bold tracking-tight">{product.name}</h1>
 
               <div className="flex items-center gap-4 mt-3">
                 <div className="flex items-center gap-1">
@@ -95,13 +107,13 @@ export default function ProductDetailPage() {
                   ))}
                   <span className="ml-1 font-medium">{product.rating}</span>
                 </div>
-                <span className="text-muted-foreground">({product.reviewCount} reviews)</span>
+                <span className="text-muted-foreground">({product.review_count} reviews)</span>
               </div>
 
               <div className="mt-4">
                 <p className="text-3xl font-bold">{formatPrice(product.price)}</p>
-                {product.originalPrice && (
-                  <p className="text-lg text-muted-foreground line-through">{formatPrice(product.originalPrice)}</p>
+                {product.original_price && (
+                  <p className="text-lg text-muted-foreground line-through">{formatPrice(product.original_price)}</p>
                 )}
               </div>
 
@@ -110,47 +122,18 @@ export default function ProductDetailPage() {
               <div className="mt-6 p-4 rounded-lg bg-muted/50">
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium">Sold by:</span>
-                  <span className="text-sm">{product.supplier}</span>
+                  <span className="text-sm">{product.suppliers?.business_name}</span>
                   <div className="flex items-center gap-1 ml-2">
                     <Star className="h-4 w-4 fill-chart-4 text-chart-4" />
-                    <span className="text-sm">{product.supplierRating}</span>
+                    <span className="text-sm">{product.suppliers?.rating}</span>
                   </div>
                 </div>
-                {product.inStock && product.stockCount && (
-                  <p className="text-sm text-secondary mt-1">{product.stockCount} units in stock</p>
+                {product.in_stock && product.stock_count && (
+                  <p className="text-sm text-secondary mt-1">{product.stock_count} units in stock</p>
                 )}
               </div>
 
-              {/* Quantity and Add to Cart */}
-              <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:items-center">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium">Quantity:</span>
-                  <div className="flex items-center border rounded-lg">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-10 w-10"
-                      onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                    >
-                      <Minus className="h-4 w-4" />
-                    </Button>
-                    <span className="w-12 text-center font-medium">{quantity}</span>
-                    <Button variant="ghost" size="icon" className="h-10 w-10" onClick={() => setQuantity(quantity + 1)}>
-                      <Plus className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-                <div className="flex gap-2 flex-1">
-                  <Button size="lg" className="flex-1" disabled={!product.inStock}>
-                    <ShoppingCart className="h-5 w-5 mr-2" />
-                    Add to Cart
-                  </Button>
-                  <Button size="lg" variant="outline">
-                    <MessageCircle className="h-5 w-5 mr-2" />
-                    Contact Supplier
-                  </Button>
-                </div>
-              </div>
+
 
               {/* Features */}
               <div className="mt-8 grid grid-cols-2 gap-4">
@@ -178,7 +161,7 @@ export default function ProductDetailPage() {
               <TabsTrigger value="description">Description</TabsTrigger>
               <TabsTrigger value="specifications">Specifications</TabsTrigger>
               <TabsTrigger value="supplier">Supplier Info</TabsTrigger>
-              <TabsTrigger value="reviews">Reviews ({product.reviewCount})</TabsTrigger>
+              <TabsTrigger value="reviews">Reviews ({product.review_count})</TabsTrigger>
             </TabsList>
 
             <TabsContent value="description" className="mt-6">
@@ -219,14 +202,14 @@ export default function ProductDetailPage() {
               <div className="rounded-lg border p-6">
                 <div className="flex items-center gap-4">
                   <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center">
-                    <span className="text-2xl font-bold text-primary">{product.supplier.charAt(0)}</span>
+                    <span className="text-2xl font-bold text-primary">{product.suppliers?.business_name?.charAt(0)}</span>
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold">{product.supplier}</h3>
+                    <h3 className="text-lg font-semibold">{product.suppliers?.business_name}</h3>
                     <div className="flex items-center gap-2 mt-1">
                       <div className="flex items-center gap-1">
                         <Star className="h-4 w-4 fill-chart-4 text-chart-4" />
-                        <span className="font-medium">{product.supplierRating}</span>
+                        <span className="font-medium">{product.suppliers?.rating}</span>
                       </div>
                       <span className="text-muted-foreground">• Verified Supplier</span>
                     </div>
@@ -286,20 +269,17 @@ export default function ProductDetailPage() {
             </TabsContent>
           </Tabs>
 
-          {/* Related Products */}
-          {relatedProducts.length > 0 && (
-            <div className="mt-16">
-              <h2 className="text-2xl font-bold mb-6">Related Products</h2>
-              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-                {relatedProducts.map((product) => (
-                  <ProductCard key={product.id} product={product} />
-                ))}
-              </div>
-            </div>
-          )}
+
         </div>
       </main>
       <Footer />
     </div>
   )
+}
+
+export async function generateStaticParams() {
+  const products = await getProducts();
+  return products.map((product) => ({
+    id: product.id,
+  }));
 }
